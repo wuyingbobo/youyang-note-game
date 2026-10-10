@@ -119,7 +119,44 @@ main{padding:0 18px 18px}
   .exercise-footer,#chord-map .exercise-footer{margin-top:0}
   .response-panel .choices .choice{min-height:44px}
 }
-</style></head><body><header><div class="brand">♪ 悠扬五线谱识谱游戏</div><span class="tag">按音组学习 · 每次10题</span></header><main><div class="map-toolbar"><div class="map-switch" aria-label="选择学习地图"><button class="active" data-map="1">地图一 · 认识音符</button><button data-map="2">地图二 · 认识音程</button><button data-map="3">地图三 · 认识和弦</button></div><button id="sound-toggle" class="sound-toggle" type="button" aria-pressed="true" aria-label="声音已开启，点击关闭声音">声音开</button></div><section id="note-map"><h1>看见一个音，找到它。</h1><p style="margin:0;color:#627089">先观察，再作答。可以慢慢想，遇到困难就看提示。</p><div class="lesson-toolbar"><nav aria-label="选择关卡"><button class="active" data-mode="0">① 辨线间</button><button data-mode="1">② 认音名</button><button data-mode="2">③ 找琴键</button><button data-mode="3">④ 综合闯关</button></nav><details class="practice-settings"><summary>音组设置</summary><div class="settings-popover"><div class="groups" aria-label="选择学习音组"><span>学习音组</span><button data-group="4" class="active">第4组 · C4—B4</button><button data-group="3" class="">第3组 · C3—B3</button><button data-group="5" class="">第5组 · C5—B5</button><button data-group="2" class="">第2组 · C2—B2</button><button data-group="6" class="">第6组 · C6—B6</button></div></div></details></div><section class="card"><div class="top"><span id="level"></span><span id="score"></span></div><div class="track"><div class="fill" id="progress"></div></div><div id="play"><h2 id="question" tabindex="-1"></h2><div class="step" id="step"></div><div class="feedback reading-card" id="feedback"><div class="reading-content" id="feedback-content" role="status" aria-live="polite" aria-atomic="true"></div><div id="reading-actions" class="reading-actions" role="group" aria-label="继续练习"><button class="primary" id="next" type="button" hidden disabled>下一题</button></div></div><div class="exercise-body"><svg class="staff" id="staff" viewBox="0 0 520 220" role="img" aria-label="高音谱表上的待认音符"></svg><div class="response-panel"><div id="answers"></div><p id="audio-notice" class="audio-notice" role="status" hidden></p></div></div><div class="exercise-footer" id="footer"><div class="actions"><button class="secondary" id="hint">给我一个提示</button></div></div></div><div id="end" class="complete" hidden></div></section><div class="below"><span id="range"></span><span>答对后，请把正确答案朗读一遍，再继续。</span></div><details class="report"><summary>本轮学习记录</summary><p style="color:#627089;font-size:14px">记录只保留在当前页面；切换关卡或音组会开始新一轮。复习会重新随机出题，并保留当前页面内各音组、关卡的薄弱项，增加需要帮助的音的练习机会。</p><table><thead><tr><th>音</th><th>独立答对</th><th>提示后答对</th><th>重试后答对</th></tr></thead><tbody id="stats"></tbody></table><p class="progression-tip">独立答对：未用提示且未答错；提示后答对：用过提示但未答错；重试后答对：本题曾答错。每题完成后只记录一次，三类都值得鼓励。</p></details></section><section id="interval-map" hidden>
+/* Phone lessons: keep the score, keyboard and reading ritual close together. */
+header{display:flex;gap:12px}
+.brand{flex:1;min-width:0}
+.map-label-short{display:none}
+.relation-details>summary{display:none}
+.relation-details[open]>.relation-columns{margin-top:0}
+.keyboard-scroll{border-left:2px solid transparent;border-right:2px solid transparent}
+.keyboard-scroll.can-scroll-left{border-left-color:#94b3f7}
+.keyboard-scroll.can-scroll-right{border-right-color:#94b3f7}
+.scroll-help{color:#2252df;font-weight:600}
+@media(max-width:680px){
+  .primary,.secondary,.settings-popover button{min-height:44px}
+  .report>summary{display:flex;align-items:center;min-height:44px}
+}
+@media(max-width:480px){
+  header{padding:6px 12px;gap:8px}
+  .brand{font-size:16px;line-height:22px}
+  header .sound-toggle{min-width:72px;padding:6px;font-size:12px}
+  .map-toolbar .map-switch{gap:6px}
+  .map-toolbar .map-switch button{font-size:14px;padding:7px 6px}
+  .map-label-full{display:none}
+  .map-label-short{display:inline}
+  .top{flex-wrap:wrap;gap:2px 8px}
+  .feedback.reading-card:not(:has(.reading-actions button:not([hidden]))) .reading-actions{display:none}
+  #feedback.reading-card.is-prompt,#i-feedback.reading-card.is-prompt,#c-feedback.reading-card.is-prompt{min-height:0;padding:8px 12px}
+  .reading-actions .primary{min-height:48px}
+  #note-map .exercise-body,#interval-map .exercise-body,#chord-map .exercise-body{gap:8px}
+  .response-panel>div:empty{display:none}
+  #c-keyboard{order:0}
+  #c-audio-notice{order:1}
+  #c-relations{order:2}
+  .chord-heading{padding-bottom:0}
+  .relation-details{margin-top:8px;border-top:1px solid #e0e7f3}
+  .relation-details>summary{display:list-item;min-height:44px;padding:11px 2px;color:#526380;font-size:13px}
+  .relation-details[open]>.relation-columns{margin-top:2px}
+  .exercise-footer .secondary{min-height:44px}
+}
+</style></head><body><header><div class="brand">♪ 悠扬五线谱识谱游戏</div><span class="tag">按音组学习 · 每次10题</span><button id="sound-toggle" class="sound-toggle" type="button" aria-pressed="true" aria-label="声音已开启，点击关闭声音">声音开</button></header><main><div class="map-toolbar"><div class="map-switch" aria-label="选择学习地图"><button class="active" data-map="1" aria-label="地图一 · 认识音符"><span class="map-label-full" aria-hidden="true">地图一 · 认识音符</span><span class="map-label-short" aria-hidden="true">音符</span></button><button data-map="2" aria-label="地图二 · 认识音程"><span class="map-label-full" aria-hidden="true">地图二 · 认识音程</span><span class="map-label-short" aria-hidden="true">音程</span></button><button data-map="3" aria-label="地图三 · 认识和弦"><span class="map-label-full" aria-hidden="true">地图三 · 认识和弦</span><span class="map-label-short" aria-hidden="true">和弦</span></button></div></div><section id="note-map"><h1>看见一个音，找到它。</h1><p style="margin:0;color:#627089">先观察，再作答。可以慢慢想，遇到困难就看提示。</p><div class="lesson-toolbar"><nav aria-label="选择关卡"><button class="active" data-mode="0">① 辨线间</button><button data-mode="1">② 认音名</button><button data-mode="2">③ 找琴键</button><button data-mode="3">④ 综合闯关</button></nav><details class="practice-settings"><summary>音组设置</summary><div class="settings-popover"><div class="groups" aria-label="选择学习音组"><span>学习音组</span><button data-group="4" class="active">第4组 · C4—B4</button><button data-group="3" class="">第3组 · C3—B3</button><button data-group="5" class="">第5组 · C5—B5</button><button data-group="2" class="">第2组 · C2—B2</button><button data-group="6" class="">第6组 · C6—B6</button></div></div></details></div><section class="card"><div class="top"><span id="level"></span><span id="score"></span></div><div class="track"><div class="fill" id="progress"></div></div><div id="play"><h2 id="question" tabindex="-1"></h2><div class="step" id="step"></div><div class="feedback reading-card" id="feedback"><div class="reading-content" id="feedback-content" role="status" aria-live="polite" aria-atomic="true"></div><div id="reading-actions" class="reading-actions" role="group" aria-label="继续练习"><button class="primary" id="next" type="button" hidden disabled>下一题</button></div></div><div class="exercise-body"><svg class="staff" id="staff" viewBox="0 0 520 220" role="img" aria-label="高音谱表上的待认音符"></svg><div class="response-panel"><div id="answers"></div><p id="audio-notice" class="audio-notice" role="status" hidden></p></div></div><div class="exercise-footer" id="footer"><div class="actions"><button class="secondary" id="hint">给我一个提示</button></div></div></div><div id="end" class="complete" hidden></div></section><div class="below"><span id="range"></span><span>答对后，请把正确答案朗读一遍，再继续。</span></div><details class="report"><summary>本轮学习记录</summary><p style="color:#627089;font-size:14px">记录只保留在当前页面；切换关卡或音组会开始新一轮。复习会重新随机出题，并保留当前页面内各音组、关卡的薄弱项，增加需要帮助的音的练习机会。</p><table><thead><tr><th>音</th><th>独立答对</th><th>提示后答对</th><th>重试后答对</th></tr></thead><tbody id="stats"></tbody></table><p class="progression-tip">独立答对：未用提示且未答错；提示后答对：用过提示但未答错；重试后答对：本题曾答错。每题完成后只记录一次，三类都值得鼓励。</p></details></section><section id="interval-map" hidden>
 <h1>看见两个音，认出它们的关系。</h1><p style="margin:0;color:#627089">自由选择音程范围。数音程时，起点也算一。</p>
 <div class="lesson-toolbar"><nav aria-label="音程关卡"><button class="active" data-imode="0">① 看谱认几度</button><button data-imode="1">② 琴键认几度</button><button data-imode="2">③ 找目标琴键</button><button data-imode="3">④ 综合闯关</button></nav><details class="practice-settings"><summary>音组与范围</summary><div class="settings-popover"><div class="groups" aria-label="选择起点音组"><span>起点音组</span><button data-igroup="4" class="active">第4组 · C4—B4</button><button data-igroup="3">第3组 · C3—B3</button><button data-igroup="5">第5组 · C5—B5</button><button data-igroup="2">第2组 · C2—B2</button><button data-igroup="6">第6组 · C6—B6</button></div>
 <div class="groups interval-ranges" aria-label="选择音程范围"><span>音程范围</span><button data-irange="0">① 一至三度</button><button data-irange="1">② 四、五度</button><button data-irange="2">③ 六至八度</button><button data-irange="3">④ 一至八度混合</button></div><p class="progression-tip">每组10题，答错可重试；复习会重新随机出题。所有范围都可直接选择；切换范围会开始新一轮。本阶段只认度数，暂不区分音程性质。</p></div></details></div>
@@ -150,14 +187,54 @@ function shuffledNotes(previous){const result=[...Array(7).keys()];for(let i=res
 function position(step){if(step<0)return '下加'+nums[Math.ceil(-step/2)-1]+(step%2===0?'线':'间');if(step>8)return '上加'+nums[Math.ceil((step-8)/2)-1]+(step%2===0?'线':'间');return '第'+nums[Math.floor(step/2)]+(step%2===0?'线':'间')}
 function makeNotes(g){let base=g<=3?18:30;return names.map((name,i)=>{let step=g*7+i-base;return {name,sol:sols[i],y:160-step*10,pos:position(step),line:step%2===0,midi:12*(g+1)+semitones[i],step}})}
 const $=id=>document.getElementById(id);
+const phoneLayout=typeof window.matchMedia==='function'?window.matchMedia('(max-width:480px)'):null;
+const keyboardWatches=new WeakMap();
+const keyboardResizeObserver=typeof window.ResizeObserver==='function'?new window.ResizeObserver(entries=>entries.forEach(entry=>entry.target.updateScrollHint?.())):null;
+function layoutFrame(callback){if(typeof window.requestAnimationFrame==='function')window.requestAnimationFrame(callback)}
+function readingReady(prefix){return !$(prefix+'next').hidden||(prefix==='c-'&&!$('c-enter-keys').hidden)}
+function revealPhoneReading(prefix,ready){
+  if(!phoneLayout?.matches)return;
+  layoutFrame(()=>{
+    const map=$(prefix==='c-'?'chord-map':prefix==='i-'?'interval-map':'note-map');
+    if(!phoneLayout.matches||map.hidden||$(prefix+'play').hidden||readingReady(prefix)!==ready)return;
+    const target=$(prefix+(ready?'feedback':'question')),bounds=target.getBoundingClientRect(),height=window.innerHeight;
+    if(bounds.top>=12&&bounds.bottom<=height-12)return;
+    const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    target.scrollIntoView({block:'nearest',behavior:reduced?'auto':'smooth'});
+  });
+}
+function refreshKeyboardHints(root){
+  layoutFrame(()=>{
+    const scroller=root.querySelector('.keyboard-scroll'),previous=keyboardWatches.get(root);
+    if(previous&&previous!==scroller){keyboardResizeObserver?.unobserve(previous);keyboardWatches.delete(root)}
+    if(!scroller)return;
+    const hint=root.querySelector('.scroll-help');
+    const update=()=>{
+      const overflow=scroller.clientWidth>0&&scroller.scrollWidth>scroller.clientWidth+2;
+      if(hint)hint.hidden=!overflow;
+      scroller.classList.toggle('can-scroll-left',overflow&&scroller.scrollLeft>2);
+      scroller.classList.toggle('can-scroll-right',overflow&&scroller.scrollLeft+scroller.clientWidth<scroller.scrollWidth-2);
+    };
+    if(previous!==scroller){
+      scroller.updateScrollHint=update;scroller.addEventListener('scroll',update,{passive:true});
+      keyboardWatches.set(root,scroller);keyboardResizeObserver?.observe(scroller);
+    }
+    update();
+  });
+}
+phoneLayout?.addEventListener?.('change',()=>{
+  const details=$('c-relations').querySelector('.relation-details');if(details)details.open=!phoneLayout.matches;
+});
 function setReadingActions(prefix,nextReady=false,enterReady=false){
+  const wasReady=readingReady(prefix);
   const next=$(prefix+'next');next.disabled=!nextReady;next.hidden=!nextReady;
   if(prefix==='c-'){const enter=$('c-enter-keys');enter.disabled=!enterReady;enter.hidden=!enterReady}
   $(prefix+'footer').hidden=nextReady||enterReady;
+  const ready=nextReady||enterReady;if(ready!==wasReady)revealPhoneReading(prefix,ready);
 }
 function paintReadingCard(id,kind,message,{symbol='',notes='',detail='',solfege=''}={}){
   const escape=value=>String(value).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
-  const e=$(id);e.className='feedback reading-card '+kind;
+  const e=$(id);e.className='feedback reading-card '+kind+(!kind&&!symbol&&!notes?' is-prompt':'');
   const pitch=symbol?(solfege?`<span class="reading-pitch"><strong class="reading-symbol">${escape(symbol)}</strong><span class="reading-solfege">（${escape(solfege)}）</span></span>`:`<strong class="reading-symbol">${escape(symbol)}</strong>`):'';
   $(id+'-content').innerHTML=`<div class="feedback-message">${escape(message)}</div>`+
     (symbol||notes?`<div class="reading-line"><span class="reading-label">一起朗读：</span>${pitch}${notes?`<span class="reading-notes">${escape(notes)}</span>`:''}</div>`:'')+
@@ -259,8 +336,8 @@ function staff(show=false,label=false){let n=notes[current],s='',ymin=Math.min(4
 function report(){$('stats').innerHTML=notes.map((n,i)=>`<tr><td>${n.name}${group} · ${n.sol}</td>${outcomeCells(stats[i])}</tr>`).join('')}
 function pick(){if(queue.length)current=queue.shift();else{let weights=stats.map((x,i)=>i===current||i===previousNotes[index]?0:weight(x,weakNotes[i])),r=Math.random()*weights.reduce((a,b)=>a+b,0);for(let i=0;i<7;i++){r-=weights[i];if(r<0){current=i;break}}}roundNotes.push(current)}
 function activeStage(){return mode===3?(phase<2?0:phase===2?1:2):mode}
-function choices(){let stage=activeStage();if(stage===0){$('step').textContent=phase===0?'第1步 / 共2步 · 判断线或间':'第2步 / 共2步 · 找到具体位置';$('question').textContent=phase===0?'这个音符在线上，还是在间里？':notes[current].line?'它在第几线？':'它在第几间？';if(phase===0){$('answers').innerHTML='<div class="choices"><button class="choice" data-answer="line">线上</button><button class="choice" data-answer="space">间里</button></div>'}else{let positions=[...new Set(notes.filter(n=>n.line===notes[current].line).map(n=>n.pos))];$('answers').innerHTML='<div class="choices">'+positions.map(p=>`<button class="choice position-choice" data-answer="${p}">${p}</button>`).join('')+'</div>'}}else if(stage===1){$('step').textContent='';$('question').textContent='这个音符叫什么名字？';$('answers').innerHTML='<div class="choices">'+notes.map((n,i)=>`<button class="choice" data-answer="${i}">${n.name}</button>`).join('')+'</div>'}else{$('step').textContent='';$('question').textContent='在琴键上找到这个音。';$('answers').innerHTML='<div class="keyboard-scroll"><div class="piano">'+names.map((n,i)=>`<button class="white" aria-label="${n}${group}白键，点击听音" data-answer="${i}">${i===0?(group===4?'中央C':'C'+group):''}</button>`).join('')+blackKeyGuides(group*7,7)+'</div></div><p class="keyboard-help">点白键可以听音；答对后还可以重复点按。</p>'}if(mode===3)$('step').textContent=['第1步 / 共4步 · 辨线间','第2步 / 共4步 · 认具体位置','第3步 / 共4步 · 认音名','第4步 / 共4步 · 找琴键'][phase]}
-function render(){stopAudio();noteAudioNotice(false);usedHint=false;attempted=false;done=false;phase=0;firstClean=true;setReadingActions('');$('hint').disabled=false;setLearningFeedback('feedback','','先观察乐谱，答对后我们一起朗读。');$('level').textContent=['第1关 · 线间与具体位置','第2关 · 认识音名','第3关 · 连接谱与琴键','第4关 · 综合闯关'][mode]+' · 第'+group+'组';$('score').textContent=`第 ${index+1} / 10 题 · 独立答对 ${correct}`;$('progress').style.width=index*10+'%';$('range').textContent=`范围：${group<=3?'低音':'高音'}谱表 · 第${group}组 C${group}—B${group}`;staff();choices();report()}
+function choices(){let stage=activeStage();if(stage===0){$('step').textContent=phase===0?'第1步 / 共2步 · 判断线或间':'第2步 / 共2步 · 找到具体位置';$('question').textContent=phase===0?'这个音符在线上，还是在间里？':notes[current].line?'它在第几线？':'它在第几间？';if(phase===0){$('answers').innerHTML='<div class="choices"><button class="choice" data-answer="line">线上</button><button class="choice" data-answer="space">间里</button></div>'}else{let positions=[...new Set(notes.filter(n=>n.line===notes[current].line).map(n=>n.pos))];$('answers').innerHTML='<div class="choices">'+positions.map(p=>`<button class="choice position-choice" data-answer="${p}">${p}</button>`).join('')+'</div>'}}else if(stage===1){$('step').textContent='';$('question').textContent='这个音符叫什么名字？';$('answers').innerHTML='<div class="choices">'+notes.map((n,i)=>`<button class="choice" data-answer="${i}">${n.name}</button>`).join('')+'</div>'}else{$('step').textContent='';$('question').textContent='在琴键上找到这个音。';$('answers').innerHTML='<div class="keyboard-scroll"><div class="piano">'+names.map((n,i)=>`<button class="white" aria-label="${n}${group}白键，点击听音" data-answer="${i}">${i===0?(group===4?'中央C':'C'+group):''}</button>`).join('')+blackKeyGuides(group*7,7)+'</div></div><p class="keyboard-help"><span class="scroll-help" hidden>左右滑动找琴键 · </span>点白键可听音，答对后可重听。</p>'}if(mode===3)$('step').textContent=['第1步 / 共4步 · 辨线间','第2步 / 共4步 · 认具体位置','第3步 / 共4步 · 认音名','第4步 / 共4步 · 找琴键'][phase];refreshKeyboardHints($('answers'))}
+function render(){stopAudio();noteAudioNotice(false);usedHint=false;attempted=false;done=false;phase=0;firstClean=true;setReadingActions('');$('hint').disabled=false;setLearningFeedback('feedback','','先看谱，答对后一起朗读。');$('level').textContent=['第1关 · 线间与具体位置','第2关 · 认识音名','第3关 · 连接谱与琴键','第4关 · 综合闯关'][mode]+' · 第'+group+'组';$('score').textContent=`第 ${index+1} / 10 题 · 独立答对 ${correct}`;$('progress').style.width=index*10+'%';$('range').textContent=`范围：${group<=3?'低音':'高音'}谱表 · 第${group}组 C${group}—B${group}`;staff();choices();report()}
 const praises=['找到了','你辨认对了','看得很仔细','这一步答对了','判断准确','做得好'];let lastPraise=-1;function reading(answer){let i=Math.floor(Math.random()*(praises.length-1));if(i>=lastPraise)i++;if(i>=praises.length)i=0;lastPraise=i;return `${praises[i]}！请朗读：${answer}。`}
 function noteAudioNotice(failed){
   const e=$('audio-notice');e.hidden=!failed;
@@ -314,8 +391,8 @@ function keyboard(showPair=false,showStart=false){
     s+=`<button class="white ${mark?'mark':''}" data-ikey="${n.d}" aria-label="${n.name}琴键，点击听音" aria-pressed="false"><span class="key-number">${caption}</span><span>${n.name}</span></button>`;
   }
   s+=blackKeyGuides(low,total);
-  get('keyboard').innerHTML=s+'</div></div><div class="step">键盘可以左右滑动；只数白键，起点也算一。</div>';updateKeyboardMarks();
-  const scroller=get('keyboard').querySelector('.keyboard-scroll');if(scroller)scroller.scrollLeft=Math.max(0,(pair.a.d-low-3)*44);
+  get('keyboard').innerHTML=s+'</div></div><p class="keyboard-help"><span class="scroll-help" hidden>左右滑动找琴键 · </span>只数白键，起点也算一。</p>';updateKeyboardMarks();
+  const scroller=get('keyboard').querySelector('.keyboard-scroll');if(scroller)scroller.scrollLeft=Math.max(0,(pair.a.d-low-3)*44);refreshKeyboardHints(get('keyboard'));
 }
 function updateKeyboardMarks(){
   get('keyboard').querySelectorAll('[data-ikey]').forEach(b=>{
@@ -328,7 +405,7 @@ function audioNotice(failed){const e=get('audio-notice');e.hidden=!failed;e.text
 
 function currentTask(){return level===3?(step===0?'degree':step===1?'start':'target'):level<=1?'degree':'target'}
 function controls(keepKeyboard=false){let task=currentTask();get('staff').removeAttribute('hidden');get('keyboard').hidden=level===0||(level===3&&step===0);get('step').textContent=level===3?['第1步 / 共3步 · 看谱认音程','第2步 / 共3步 · 找起点琴键','第3步 / 共3步 · 找目标琴键'][step]:'';if(task==='degree'){get('question').textContent=level===1?'标出的两个白键相隔几度？':'从①到②，这两个音相隔几度？';get('answers').innerHTML='<div class="choices">'+range().degrees.map(d=>`<button class="choice position-choice" data-idegree="${d}">${labels[d]}${d===1?'（同度）':''}</button>`).join('')+'</div>';drawStaff();if(level===1)keyboard(true)}else{get('answers').innerHTML='';get('question').textContent=task==='start'?'先在琴键上找到①起点音。':level===2?`从${pair.a.name}出发，${pair.degree===1?'重复这个音':direction()+labels[pair.degree]}，找到目标琴键。`:'现在在琴键上找到②目标音。';drawStaff(level===2);if(keepKeyboard)updateKeyboardMarks();else keyboard(false,level===2||(level===3&&step===2))}}
-function beginQuestion(){stopAudio();confirmedKeys.clear();audioNotice(false);usedHint=false;step=0;finished=false;clean=true;recordedWrong=false;setReadingActions('i-');get('hint').disabled=false;setLearningFeedback('i-feedback','','先观察两个音，答对后我们一起朗读。');get('level').textContent=['第1关 · 看谱认音程','第2关 · 琴键认音程','第3关 · 按关系找琴键','第4关 · 音程综合闯关'][level]+' · '+range().title;get('score').textContent=`第 ${round+1} / 10 题 · 独立答对 ${score}`;get('progress').style.width=round*10+'%';get('range').textContent=`起点：第${octave}组 C${octave}—B${octave} · ${range().title} · ${octave<=3?'低音':'高音'}谱表`;controls();record()}
+function beginQuestion(){stopAudio();confirmedKeys.clear();audioNotice(false);usedHint=false;step=0;finished=false;clean=true;recordedWrong=false;setReadingActions('i-');get('hint').disabled=false;setLearningFeedback('i-feedback','','先看两个音，答对后一起朗读。');get('level').textContent=['第1关 · 看谱认音程','第2关 · 琴键认音程','第3关 · 按关系找琴键','第4关 · 音程综合闯关'][level]+' · '+range().title;get('score').textContent=`第 ${round+1} / 10 题 · 独立答对 ${score}`;get('progress').style.width=round*10+'%';get('range').textContent=`起点：第${octave}组 C${octave}—B${octave} · ${range().title} · ${octave<=3?'低音':'高音'}谱表`;controls();record()}
 function wrong(){clean=false;if(!recordedWrong){counters[pair.degree-1].wrong++;rememberDifficulty(practiceKey(),8,pair.degree-1,1);recordedWrong=true;record()}setLearningFeedback('i-feedback','bad',currentTask()==='degree'?'从①数到②，起点和终点都要算，线与间的每一个音名位置都算一个。':currentTask()==='start'?'先找①的音名和音组，别急着找第二个音。':'从起点开始数，起点也算一；向上往右，向下往左。')}
 function respond(type,value){
   if(finished){if(currentTask()==='degree'&&type==='degree'&&Number(value)===pair.degree)intervalSound(pair.a.midi,pair.b.midi,audioNotice);return}
@@ -378,7 +455,8 @@ function relationColumn(title,list,current=false){
     [0,1].map(i=>`<div class="relation-row"><span class="relation-path" aria-label="${roles[list[i].role]}到${roles[list[i+1].role]}">${roles[list[i].role]}<span aria-hidden="true">→</span>${roles[list[i+1].role]}</span><strong>${intervalQuality(list[i],list[i+1])}</strong></div>`).join('')+'</section>';
 }
 function showRelations(){
-  get('relations').innerHTML=`<div class="chord-heading"><div class="chord-identity"><strong>${chordSymbol()}</strong><span>${chordName()}</span></div><div class="chord-tools"><div class="chord-bass">最低音 <strong>${tones[0].name}</strong></div><button id="c-listen" class="chord-listen" type="button" data-chord-listen>♪ 听和弦</button></div></div><div class="relation-columns">${relationColumn('原位关系',baseTones)}${relationColumn('本题排列',tones,true)}</div>`;updateSoundToggle();
+  const compact=phoneLayout?.matches;
+  get('relations').innerHTML=`<div class="chord-heading"><div class="chord-identity"><strong>${chordSymbol()}</strong><span>${chordName()}</span></div><div class="chord-tools"><div class="chord-bass">最低音 <strong>${tones[0].name}</strong></div><button id="c-listen" class="chord-listen" type="button" data-chord-listen>♪ 听和弦</button></div></div><details class="relation-details"${compact?'':' open'}><summary>查看音程关系</summary><div class="relation-columns">${relationColumn('原位关系',baseTones)}${relationColumn('本题排列',tones,true)}</div></details>`;updateSoundToggle();
 }
 function listenVoicing(enable=false){if(step!==1)return;if(enable&&!soundEnabled)setSoundEnabled(true);pianoVoicing(tones.map(n=>n.midi),audioNotice)}
 function task(){return step===0?{type:'symbol'}:{type:'key'}}
@@ -391,7 +469,7 @@ function keyboard(){
     const n=pitch(low+j),selected=selectedKeys.has(n.midi);
     s+=`<button class="white ${selected?'mark':''}" data-ckey="${n.midi}" aria-label="${n.name}白键，点击听音" aria-pressed="${selected}"><span class="key-number">${selected?'✓':''}</span><span class="key-name">${n.name}</span></button>`;
   }
-  get('keyboard').innerHTML=s+blackKeyGuides(low,total)+'</div></div><p class="keyboard-help">任意顺序找齐三个白键；键盘放不下时可左右滑动。</p>';
+  get('keyboard').innerHTML=s+blackKeyGuides(low,total)+'</div></div><p class="keyboard-help"><span class="scroll-help" hidden>左右滑动找琴键 · </span>任意顺序找齐三个白键，点键可听音。</p>';refreshKeyboardHints(get('keyboard'));
 }
 function audioNotice(failed){const e=get('audio-notice');if(e){e.hidden=!failed;e.textContent=failed?'声音未开启或已暂停，'+(step===0?'请再点一次正确答案重试':'请点“听和弦”或琴键重试')+'，并检查设备音量。':''}}
 function updateKeyboardMarks(){get('keyboard').querySelectorAll('[data-ckey]').forEach(b=>{const midi=Number(b.dataset.ckey),selected=selectedKeys.has(midi),miss=midi===wrongKey;b.classList.toggle('mark',selected);b.classList.toggle('miss',miss);b.setAttribute('aria-pressed',String(selected));b.querySelector('.key-number').textContent=selected?'✓':miss?'×':''})}
@@ -412,7 +490,7 @@ function controls(){
   }
 }
 function select(){let r;if(queue.length)r=queue.shift();else{const ws=counters.map((c,i)=>i===root||i===previous[round]?0:weight(c,weakChords[i]));let n=Math.random()*ws.reduce((a,b)=>a+b,0);for(let i=0;i<7;i++){n-=ws[i];if(n<0){r=i;break}}}build(r);history.push(r)}
-function begin(){stopAudio();symbolConfirmed=false;audioNotice(false);usedHint=false;step=0;selectedKeys.clear();wrongKey=null;finished=false;clean=true;recordedWrong=false;get('next').disabled=true;get('hint').disabled=false;setFeedback('','先观察乐谱，答对后我们一起朗读。');get('level').textContent=`第${level+1}关 · ${forms[level]}`;get('score').textContent=`第 ${round+1} / 10 题 · 独立答对 ${score}`;get('progress').style.width=round*10+'%';get('range').textContent=`${staffName()} · 根音第${octave}组 C${octave}—B${octave} · 纯白键三和弦`;controls();record()}
+function begin(){stopAudio();symbolConfirmed=false;audioNotice(false);usedHint=false;step=0;selectedKeys.clear();wrongKey=null;finished=false;clean=true;recordedWrong=false;get('next').disabled=true;get('hint').disabled=false;setFeedback('','先看谱，答对后一起朗读。');get('level').textContent=`第${level+1}关 · ${forms[level]}`;get('score').textContent=`第 ${round+1} / 10 题 · 独立答对 ${score}`;get('progress').style.width=round*10+'%';get('range').textContent=`${staffName()} · 根音第${octave}组 C${octave}—B${octave} · 纯白键三和弦`;controls();record()}
 function respond(type,value){
   if(finished)return;
   const t=task();
