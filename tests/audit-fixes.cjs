@@ -76,7 +76,61 @@ for(const g of [2,3,4,5,6])for(let l=0;l<3;l++)for(let r=0;r<7;r++)for(const ord
 // Independent staff/key/label mapping, rather than assuming the generated MIDI is correct.
 const letters=['C','D','E','F','G','A','B'],whiteSemitones=[0,2,4,5,7,9,11];
 const expectedMidi=d=>12*(Math.floor(d/7)+1)+whiteSemitones[d%7];
-const expectedName=d=>letters[d%7]+Math.floor(d/7);
+const traditionalNotes=[
+ ['C₂','D₂','E₂','F₂','G₂','A₂','B₂'],
+ ['C₁','D₁','E₁','F₁','G₁','A₁','B₁'],
+ ['C','D','E','F','G','A','B'],
+ ['c','d','e','f','g','a','b'],
+ ['c¹','d¹','e¹','f¹','g¹','a¹','b¹'],
+ ['c²','d²','e²','f²','g²','a²','b²'],
+ ['c³','d³','e³','f³','g³','a³','b³'],
+ ['c⁴','d⁴','e⁴','f⁴','g⁴','a⁴','b⁴'],
+ ['c⁵','d⁵','e⁵','f⁵','g⁵','a⁵','b⁵']
+];
+const expectedName=d=>traditionalNotes[Math.floor(d/7)][d%7];
+// Traditional pitch notation must reach the visible choices and structured reading card.
+const notation=setup(),groupNames={2:'大字组',3:'小字组',4:'小字一组',5:'小字二组',6:'小字三组'};
+for(const g of [2,3,4,5,6]){
+ const label=`第${g}组（${groupNames[g]}）`;
+ assert.equal(html.split(`${label}· C${g}—B${g}`).length-1,3);
+ for(let i=0;i<7;i++){
+  notation.run(`group=${g};mode=1;reset();current=${i};render();hint()`);
+  const choices=[...notation.els.answers.innerHTML.matchAll(/data-answer="\d+">([^<]+)<\/button>/g)].map(m=>m[1]);
+  assert.deepEqual(choices,traditionalNotes[g]);
+  assert.ok(notation.els.feedback.textContent.includes(traditionalNotes[g].join('、')));
+  assert.ok(notation.els.level.textContent.includes(label));
+  assert.ok(notation.els.range.textContent.includes(`${label} ${traditionalNotes[g][0]}—${traditionalNotes[g][6]}`));
+  const before=notation.voices.length;notation.run(`answer(${i})`);
+  assert.equal(notation.voices.length,before+1);
+  assert.ok(Math.abs(notation.voices[before]-440*2**((expectedMidi(g*7+i)-69)/12))<1e-8);
+  const reading=notation.els['feedback-content'].innerHTML;
+  assert.ok(reading.includes(`<strong class="reading-symbol">${traditionalNotes[g][i]}</strong>`));
+  assert.ok(reading.includes('class="reading-solfege"'));assert.ok(reading.includes('class="reading-detail"'));
+  assert.ok(notation.els.stats.innerHTML.includes(`<td>${traditionalNotes[g][i]} ·`));
+ }
+}
+// Cross-group intervals cover lower subscripts, upper superscripts and both cases.
+for(const [g,start,sign,a,b] of [[2,0,-1,'C','C₁'],[3,6,1,'b','b¹'],[4,0,-1,'c¹','c'],[6,6,1,'b³','b⁴']]){
+ notation.run(`intervalGame.start(${g},0,8,${start},${sign});intervalGame.respond('degree',8)`);
+ const reading=notation.els['i-feedback-content'].innerHTML;
+ assert.ok(reading.includes(`<span class="reading-notes">${a} → ${b}</span>`));
+ assert.ok(reading.includes('class="reading-detail"'));
+}
+for(const [g,bass,tones] of [[2,'E₁',['E₁','G₁','C']],[4,'e',['e','g','c¹']],[6,'e²',['e²','g²','c³']]]){
+ notation.run(`chordGame.start(${g},1,0);chordGame.hint()`);
+ assert.ok(notation.els['c-feedback'].textContent.includes(`最低音是${bass}`));
+ assert.ok(notation.els['c-feedback'].textContent.includes('斜线后写大写字母E，不写音组'));
+ notation.run('chordGame.respond("answer","C/E")');notation.els['c-enter-keys'].onclick();
+ assert.ok(notation.els['c-relations'].innerHTML.includes(`<strong>${bass}</strong>`));
+ const state=notation.run('chordGame.state()');
+ assert.deepEqual(Array.from(state.tones,n=>n.name),tones);
+ for(const n of state.tones)notation.run(`chordGame.respond('key',${n.midi})`);
+ const reading=notation.els['c-feedback-content'].innerHTML;
+ assert.ok(reading.includes('<strong class="reading-symbol">C/E</strong>'));
+ assert.ok(reading.includes(`<span class="reading-notes">${tones.join(' · ')}</span>`));
+ assert.ok(notation.els['c-stats'].innerHTML.includes(`C/E · 根音${traditionalNotes[g][0]}`));
+}
+console.log('Traditional pitch notation passed: all 15 group labels, 35 note choices/readings/frequencies, cross-group intervals including C₁ and b⁴, and inversion hints/readings with unchanged uppercase modern chord symbols.');
 let independentMappings=0,retainedProgressCases=0;
 for(const g of [2,3,4,5,6])for(let l=0;l<3;l++)for(let r=0;r<7;r++){
  run(`chordGame.start(${g},${l},${r})`);
@@ -89,7 +143,7 @@ for(const g of [2,3,4,5,6])for(let l=0;l<3;l++)for(let r=0;r<7;r++){
  assert.deepEqual(options.map(m=>m[1]),symbolForms[l]);assert.deepEqual(options.map(m=>m[2]),symbolForms[l]);
  assert.ok(els['c-question'].textContent.includes('现代记号'));
  const correctSymbol=symbolForms[l][r];
- if(l>0){assert.equal(correctSymbol.split('/')[1],expectedName(expected[0]).replace(/[0-9]+$/,''));run(`chordGame.respond('answer','${symbols[r]}')`);assert.equal(state('chordGame').step,0)}
+ if(l>0){assert.equal(correctSymbol.split('/')[1],letters[expected[0]%7]);run(`chordGame.respond('answer','${symbols[r]}')`);assert.equal(state('chordGame').step,0)}
  const incorrectSymbol=l===0?symbols[(r+1)%7]:`${symbols[r]}/${letters[(expected[0]+1)%7]}`;
  run(`chordGame.respond('answer','${incorrectSymbol}')`);assert.equal(state('chordGame').step,0);assert.equal(els['c-next'].disabled,true);
  run(`chordGame.respond('answer','${symbolForms[l][r]}')`);els['c-enter-keys'].onclick();
@@ -228,7 +282,7 @@ intervalClick(intervalNodes.find(n=>Number(n.dataset.ikey)===30));assert.equal(s
 const beforeBlack=voices.length;els['i-keyboard'].onclick({target:{closest:()=>null}});assert.equal(voices.length,beforeBlack);
 // Muting and unavailable audio must leave staff confirmation and judgment usable.
 const mutedInterval=setup('off');mutedInterval.run('intervalGame.start(4,2,3,0,1)');const mutedTarget=mutedInterval.els['i-keyboard'].querySelectorAll('[data-ikey]').find(n=>Number(n.dataset.ikey)===30);
-mutedInterval.els['i-keyboard'].onclick({target:{closest:()=>mutedTarget}});assert.equal(mutedInterval.voices.length,0);assert.equal(mutedInterval.run('intervalGame.state().finished'),true);assert.ok(mutedInterval.els['i-staff'].innerHTML.includes('② E4'));
+mutedInterval.els['i-keyboard'].onclick({target:{closest:()=>mutedTarget}});assert.equal(mutedInterval.voices.length,0);assert.equal(mutedInterval.run('intervalGame.state().finished'),true);assert.ok(mutedInterval.els['i-staff'].innerHTML.includes('② e¹'));
 mutedInterval.els['sound-toggle'].onclick();mutedInterval.els['i-keyboard'].onclick({target:{closest:()=>mutedTarget}});assert.equal(mutedInterval.voices.length,4);assert.equal(mutedInterval.voices[0],329.6275569128699);
 run('intervalGame.start(4,2,3,0,1);audio=undefined;window.AudioContext=undefined');const failedIntervalTarget=els['i-keyboard'].querySelectorAll('[data-ikey]').find(n=>Number(n.dataset.ikey)===30);
 els['i-keyboard'].onclick({target:{closest:()=>failedIntervalTarget}});assert.equal(state('intervalGame').finished,true);assert.equal(els['i-audio-notice'].hidden,false);assert.ok(staffNotes()[1].confirmed);
