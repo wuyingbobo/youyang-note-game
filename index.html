@@ -207,6 +207,8 @@ function pitchName(letter,octave){
 }
 function groupLabel(g){return `第${g}组（${octaveGroups[g]}）`}
 function pitchRange(g){return pitchName('C',g)+'—'+pitchName('B',g)}
+// Keyboard labels keep scientific pitch notation for direct visual orientation.
+function keyboardPitchName(d){return names[((d%7)+7)%7]+Math.floor(d/7)}
 let group=4,notes=[],mode=0,index=0,correct=0,current=0,attempted=false,done=false,phase=0,firstClean=true,stats=[],queue=[],audio,usedHint=false,weakNotes=[];
 const reviewMemory=new Map();
 function counter(){return {right:0,guided:0,retried:0,wrong:0}}
@@ -371,7 +373,7 @@ function staff(show=false,label=false){let n=notes[current],s='',ymin=Math.min(4
 function report(){$('stats').innerHTML=notes.map((n,i)=>`<tr><td>${n.name} · ${n.sol}</td>${outcomeCells(stats[i])}</tr>`).join('')}
 function pick(){if(queue.length)current=queue.shift();else{let weights=stats.map((x,i)=>i===current||i===previousNotes[index]?0:weight(x,weakNotes[i])),r=Math.random()*weights.reduce((a,b)=>a+b,0);for(let i=0;i<7;i++){r-=weights[i];if(r<0){current=i;break}}}roundNotes.push(current)}
 function activeStage(){return mode===3?(phase<2?0:phase===2?1:2):mode}
-function choices(){let stage=activeStage();if(stage===0){$('step').textContent=phase===0?'第1步 / 共2步 · 判断线或间':'第2步 / 共2步 · 找到具体位置';$('question').textContent=phase===0?'这个音符在线上，还是在间里？':notes[current].line?'它在第几线？':'它在第几间？';if(phase===0){$('answers').innerHTML='<div class="choices"><button class="choice" data-answer="line">线上</button><button class="choice" data-answer="space">间里</button></div>'}else{let positions=[...new Set(notes.filter(n=>n.line===notes[current].line).map(n=>n.pos))];$('answers').innerHTML='<div class="choices">'+positions.map(p=>`<button class="choice position-choice" data-answer="${p}">${p}</button>`).join('')+'</div>'}}else if(stage===1){$('step').textContent='';$('question').textContent='这个音符叫什么名字？';$('answers').innerHTML='<div class="choices">'+notes.map((n,i)=>`<button class="choice" data-answer="${i}">${n.name}</button>`).join('')+'</div>'}else{$('step').textContent='';$('question').textContent='在琴键上找到这个音。';$('answers').innerHTML='<div class="keyboard-scroll"><div class="piano">'+names.map((n,i)=>`<button class="white" aria-label="${pitchName(n,group)}白键，点击听音" data-answer="${i}">${i===0?pitchName('C',group):''}</button>`).join('')+blackKeyGuides(group*7,7)+'</div></div><p class="keyboard-help"><span class="scroll-help" hidden>左右滑动找琴键 · </span>点白键可听音，答对后可重听。</p>'}if(mode===3)$('step').textContent=['第1步 / 共4步 · 辨线间','第2步 / 共4步 · 认具体位置','第3步 / 共4步 · 认音名','第4步 / 共4步 · 找琴键'][phase];refreshKeyboardHints($('answers'))}
+function choices(){let stage=activeStage();if(stage===0){$('step').textContent=phase===0?'第1步 / 共2步 · 判断线或间':'第2步 / 共2步 · 找到具体位置';$('question').textContent=phase===0?'这个音符在线上，还是在间里？':notes[current].line?'它在第几线？':'它在第几间？';if(phase===0){$('answers').innerHTML='<div class="choices"><button class="choice" data-answer="line">线上</button><button class="choice" data-answer="space">间里</button></div>'}else{let positions=[...new Set(notes.filter(n=>n.line===notes[current].line).map(n=>n.pos))];$('answers').innerHTML='<div class="choices">'+positions.map(p=>`<button class="choice position-choice" data-answer="${p}">${p}</button>`).join('')+'</div>'}}else if(stage===1){$('step').textContent='';$('question').textContent='这个音符叫什么名字？';$('answers').innerHTML='<div class="choices">'+notes.map((n,i)=>`<button class="choice" data-answer="${i}">${n.name}</button>`).join('')+'</div>'}else{$('step').textContent='';$('question').textContent='在琴键上找到这个音。';$('answers').innerHTML='<div class="keyboard-scroll"><div class="piano">'+names.map((n,i)=>`<button class="white" aria-label="${keyboardPitchName(group*7+i)}白键，点击听音" data-answer="${i}">${i===0?keyboardPitchName(group*7):''}</button>`).join('')+blackKeyGuides(group*7,7)+'</div></div><p class="keyboard-help"><span class="scroll-help" hidden>左右滑动找琴键 · </span>点白键可听音，答对后可重听。</p>'}if(mode===3)$('step').textContent=['第1步 / 共4步 · 辨线间','第2步 / 共4步 · 认具体位置','第3步 / 共4步 · 认音名','第4步 / 共4步 · 找琴键'][phase];refreshKeyboardHints($('answers'))}
 function render(){stopAudio();noteAudioNotice(false);usedHint=false;attempted=false;done=false;phase=0;firstClean=true;setReadingActions('');$('hint').disabled=false;setLearningFeedback('feedback','','先看谱，答对后一起朗读。');$('level').textContent=['第1关 · 线间与具体位置','第2关 · 认识音名','第3关 · 连接谱与琴键','第4关 · 综合闯关'][mode]+' · '+groupLabel(group);$('score').textContent=`第 ${index+1} / 10 题 · 独立答对 ${correct}`;$('progress').style.width=index*10+'%';$('range').textContent=`范围：${group<=3?'低音':'高音'}谱表 · ${groupLabel(group)} ${pitchRange(group)}`;staff();choices();report()}
 const praises=['找到了','你辨认对了','看得很仔细','这一步答对了','判断准确','做得好'];let lastPraise=-1;function reading(answer){let i=Math.floor(Math.random()*(praises.length-1));if(i>=lastPraise)i++;if(i>=praises.length)i=0;lastPraise=i;return `${praises[i]}！请朗读：${answer}。`}
 function noteAudioNotice(failed){
@@ -423,7 +425,7 @@ function keyboard(showPair=false,showStart=false){
   const span=Math.max(...range().degrees)-1,low=Math.min(pair.a.d-span,octave*7),high=Math.max(pair.a.d+span,octave*7+6),total=high-low+1,width=Math.max(308,total*44);let s=`<div class="keyboard-scroll"><div class="interval-piano" style="--keyboard-width:${width}px">`;
   for(let j=0;j<total;j++){
     const n=pitch(low+j),start=n.d===pair.a.d,end=n.d===pair.b.d,mark=showPair?(start||end):showStart&&start,caption=showPair&&start&&end?'①②':showPair&&start?'①':showPair&&end?'②':showStart&&start?'起点':'';
-    s+=`<button class="white ${mark?'mark':''}" data-ikey="${n.d}" aria-label="${n.name}琴键，点击听音" aria-pressed="false"><span class="key-number">${caption}</span><span>${n.name}</span></button>`;
+    s+=`<button class="white ${mark?'mark':''}" data-ikey="${n.d}" aria-label="${keyboardPitchName(n.d)}琴键，点击听音" aria-pressed="false"><span class="key-number">${caption}</span><span>${keyboardPitchName(n.d)}</span></button>`;
   }
   s+=blackKeyGuides(low,total);
   get('keyboard').innerHTML=s+'</div></div><p class="keyboard-help"><span class="scroll-help" hidden>左右滑动找琴键 · </span>只数白键，起点也算一。</p>';updateKeyboardMarks();
@@ -502,7 +504,7 @@ function keyboard(){
   let s=`<div class="keyboard-scroll"><div class="interval-piano chord-piano" style="--keyboard-width:${total*44}px" aria-label="白键练习区，点击可听音">`;
   for(let j=0;j<total;j++){
     const n=pitch(low+j),selected=selectedKeys.has(n.midi);
-    s+=`<button class="white ${selected?'mark':''}" data-ckey="${n.midi}" aria-label="${n.name}白键，点击听音" aria-pressed="${selected}"><span class="key-number">${selected?'✓':''}</span><span class="key-name">${n.name}</span></button>`;
+    s+=`<button class="white ${selected?'mark':''}" data-ckey="${n.midi}" aria-label="${keyboardPitchName(n.d)}白键，点击听音" aria-pressed="${selected}"><span class="key-number">${selected?'✓':''}</span><span class="key-name">${keyboardPitchName(n.d)}</span></button>`;
   }
   get('keyboard').innerHTML=s+blackKeyGuides(low,total)+'</div></div><p class="keyboard-help"><span class="scroll-help" hidden>左右滑动找琴键 · </span>任意顺序找齐三个白键，点键可听音。</p>';refreshKeyboardHints(get('keyboard'));
 }

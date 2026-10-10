@@ -88,6 +88,7 @@ const traditionalNotes=[
  ['c⁵','d⁵','e⁵','f⁵','g⁵','a⁵','b⁵']
 ];
 const expectedName=d=>traditionalNotes[Math.floor(d/7)][d%7];
+const expectedKeyboardName=d=>letters[d%7]+Math.floor(d/7);
 // Traditional pitch notation must reach the visible choices and structured reading card.
 const notation=setup(),groupNames={2:'大字组',3:'小字组',4:'小字一组',5:'小字二组',6:'小字三组'};
 for(const g of [2,3,4,5,6]){
@@ -149,7 +150,7 @@ for(const g of [2,3,4,5,6])for(let l=0;l<3;l++)for(let r=0;r<7;r++){
  run(`chordGame.respond('answer','${symbolForms[l][r]}')`);els['c-enter-keys'].onclick();
  assert.equal(state('chordGame').step,1);assert.ok(els['c-feedback'].textContent.includes(correctSymbol));assert.ok(els['c-relations'].innerHTML.includes(correctSymbol));assert.ok(els['c-stats'].innerHTML.includes(correctSymbol));
  const low=expected[0]-1,nodes=els['c-keyboard'].querySelectorAll('[data-ckey]');
- nodes.forEach((node,j)=>{const d=low+j;assert.equal(Number(node.dataset.ckey),expectedMidi(d));assert.ok(els['c-keyboard'].innerHTML.includes(`aria-label="${expectedName(d)}白键，点击听音"`));independentMappings++});
+ nodes.forEach((node,j)=>{const d=low+j;assert.equal(Number(node.dataset.ckey),expectedMidi(d));assert.ok(els['c-keyboard'].innerHTML.includes(`aria-label="${expectedKeyboardName(d)}白键，点击听音"`));assert.ok(els['c-keyboard'].innerHTML.includes(`<span class="key-name">${expectedKeyboardName(d)}</span>`));independentMappings++});
  // All touch targets have a 44px minimum, with scrollable overflow rather than shrinking.
  assert.ok(els['c-keyboard'].innerHTML.includes(`--keyboard-width:${nodes.length*44}px`));
 }
@@ -258,6 +259,7 @@ for(const g of [2,3,4,5,6])for(const l of [2,3])for(let degree=1;degree<=8;degre
  if(l===2){assert.deepEqual(staffNotes().map(n=>n.d),[a]);assert.ok(!staffNotes().some(n=>n.confirmed))}
  else run(`intervalGame.respond('degree',${degree})`);
  const nodes=els['i-keyboard'].querySelectorAll('[data-ikey]'),writes=els['i-keyboard'].innerHTMLWrites,scroller=els['i-keyboard'].querySelector('.keyboard-scroll');scroller.scrollLeft=123;
+ nodes.forEach(node=>{const d=Number(node.dataset.ikey),name=expectedKeyboardName(d);assert.ok(els['i-keyboard'].innerHTML.includes(`aria-label="${name}琴键，点击听音"`));assert.ok(els['i-keyboard'].innerHTML.includes(`<span>${name}</span></button>`))});
  assert.ok(els['i-keyboard'].innerHTML.includes(`--keyboard-width:${Math.max(308,nodes.length*44)}px`));
  if(l===3){
    const first=nodes.find(n=>Number(n.dataset.ikey)===a);first.focus();intervalClick(first);
@@ -401,6 +403,8 @@ for(const g of [2,3,4,5,6])for(const level of [2,3])for(let target=0;target<7;ta
  prepareNote(noteKeys,g,level,target);
  const writes=noteKeys.els.answers.innerHTMLWrites,keys=noteKeys.els.answers.querySelectorAll('[data-answer]');
  assert.equal(keys.length,7);assert.equal((noteKeys.els.answers.innerHTML.match(/class="black" aria-hidden="true"/g)||[]).length,5);
+ keys.forEach((_,i)=>assert.ok(noteKeys.els.answers.innerHTML.includes(`aria-label="${expectedKeyboardName(g*7+i)}白键，点击听音"`)));
+ assert.ok(noteKeys.els.answers.innerHTML.includes(`data-answer="0">C${g}</button>`));
  const beforeBlack=noteKeys.voices.length;noteKeys.els.answers.onclick({target:{closest:()=>null}});assert.equal(noteKeys.voices.length,beforeBlack);assert.equal(noteKeys.run('done'),false);
  const sequence=mixed?[...Array(7).keys()].filter(k=>k!==target).concat(target,target):[target,target];
  for(const key of sequence){
