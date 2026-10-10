@@ -1,6 +1,6 @@
 const fs=require('fs'),vm=require('vm'),assert=require('assert');const html=fs.readFileSync(require('path').join(__dirname,'../index.html'),'utf8');let source=html.split('<script>')[1].split('</script>')[0],ia=source.indexOf('const intervalGame='),ca=source.indexOf('const chordGame=');source=source.slice(0,ia)+source.slice(ia,ca).replace('return {reset};',`return {reset,respond,next,hint,start(g,l,d,s,dir=1,stage=3){octave=g;level=l;journey().stage=stage;reset();pair=makePair(d,s,dir);beginQuestion()},state(){return {pair,step,finished,score,round,counters,usedHint,weak:weakDegrees,key:practiceKey()}},startRound(g,l,stage){octave=g;level=l;journey().stage=stage;reset()}};`)+source.slice(ca).replace('return {reset};',`return {reset,respond,next,hint,start(g,l,r){octave=g;level=l;reset();build(r);begin()},state(){return {root,tones,step,finished,score,round,counters,usedHint,symbolConfirmed,selected:[...selectedKeys],weak:weakChords,key:practiceKey()}},startRound(g,l){octave=g;level=l;reset()}};`);
 const symbols=['C','Dm','Em','F','G','Am','Bdim'],symbolForms=[symbols,['C/E','Dm/F','Em/G','F/A','G/B','Am/C','Bdim/D'],['C/G','Dm/A','Em/B','F/C','G/D','Am/E','Bdim/F']],orders=[[0,1,2],[0,2,1],[1,0,2],[1,2,0],[2,0,1],[2,1,0]];let noteCases=0,intervalCases=0,chordCases=0,reviewRounds=0,audioClicks=0;
-function setup(storedSound,storageAvailable=true,layout={}){const preferences=new Map(storedSound===undefined?[]:[['bobo-music-note-lab.sound',storedSound]]),localStorage={getItem(k){if(!storageAvailable)throw Error('storage unavailable');return preferences.get(k)??null},setItem(k,v){if(!storageAvailable)throw Error('storage unavailable');preferences.set(k,String(v))}};const els={},timers=new Map(),voices=[],voiceStarts=[],doc={activeElement:null};let timerId=0,clock=0;function element(id=''){let content='',buttons=[],scroller={scrollLeft:0};const e={style:{},attrs:{},get textContent(){return ['feedback','i-feedback','c-feedback','sound-toggle'].includes(id)?this.innerHTML.replace(/<[^>]*>/g,'').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'\"').replace(/&#39;/g,"'"):this._text||''},set textContent(value){this._text=String(value);if(id==='c-feedback')content=''},hidden:false,innerHTMLWrites:0,classList:{add(){},toggle(){}},setAttribute(k,v){this.attrs[k]=String(v)},removeAttribute(k){delete this.attrs[k]},focus(){doc.activeElement=this},querySelectorAll(q){return q==='[data-answer]'?buttons.filter(b=>b.dataset.answer!==undefined):q==='[data-ckey]'?buttons.filter(b=>b.dataset.ckey!==undefined):q==='[data-ikey]'?buttons.filter(b=>b.dataset.ikey!==undefined):q==='[data-canswer]'?buttons.filter(b=>b.dataset.canswer!==undefined):[]},querySelector(){return scroller},get innerHTML(){return ['feedback','i-feedback','c-feedback'].includes(id)?els[id+'-content']?.innerHTML??content:content},set innerHTML(value){this.innerHTMLWrites++;if(buttons.includes(doc.activeElement))doc.activeElement=null;content=value;buttons=[...value.matchAll(/<button class="([^"]*)" data-(ckey|ikey)="(\d+)" aria-label="([^"]*)" aria-pressed="(true|false)"><span class="key-number">([^<]*)<\/span>/g)].map(m=>{const attrs={'aria-pressed':m[5]},classes=new Set(m[1].split(' ')),number={textContent:m[6]};return {dataset:{[m[2]]:m[3]},attrs,classes,number,classList:{add(k){classes.add(k)},toggle(k,yes){yes?classes.add(k):classes.delete(k)}},setAttribute(k,v){attrs[k]=String(v)},querySelector(){return number},focus(){doc.activeElement=this}}});buttons.push(...[...value.matchAll(/<button class="([^"]*)"[^>]*data-answer="([^"]+)"[^>]*>([^<]*)<\/button>/g)].map(m=>{const attrs={},classes=new Set(m[1].split(' '));return {dataset:{answer:m[2]},attrs,classes,classList:{add(k){classes.add(k)},toggle(k,yes){yes?classes.add(k):classes.delete(k)}},setAttribute(k,v){attrs[k]=String(v)},focus(){doc.activeElement=this}}}));buttons.push(...[...value.matchAll(/<button class="([^"]*)" data-canswer="([^"]+)">([^<]+)<\/button>/g)].map(m=>{const attrs={},classes=new Set(m[1].split(' '));return {dataset:{canswer:m[2]},disabled:false,attrs,classes,classList:{toggle(k,yes){yes?classes.add(k):classes.delete(k)}},setAttribute(k,v){attrs[k]=String(v)},focus(){doc.activeElement=this}}}))}};return e}
+function setup(storedSound,storageAvailable=true,layout={}){const preferences=new Map(storedSound===undefined?[]:[['bobo-music-note-lab.sound',storedSound]]),localStorage={getItem(k){if(!storageAvailable)throw Error('storage unavailable');return preferences.get(k)??null},setItem(k,v){if(!storageAvailable)throw Error('storage unavailable');preferences.set(k,String(v))}};const els={},timers=new Map(),voices=[],voiceStarts=[],doc={activeElement:null,listeners:{},addEventListener(type,fn){this.listeners[type]=fn}};let timerId=0,clock=0;function element(id=''){let content='',buttons=[],scroller={scrollLeft:0};const e={style:{},attrs:{},get textContent(){return ['feedback','i-feedback','c-feedback','sound-toggle'].includes(id)?this.innerHTML.replace(/<[^>]*>/g,'').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'\"').replace(/&#39;/g,"'"):this._text||''},set textContent(value){this._text=String(value);if(id==='c-feedback')content=''},hidden:false,innerHTMLWrites:0,classList:{add(){},toggle(){}},setAttribute(k,v){this.attrs[k]=String(v)},removeAttribute(k){delete this.attrs[k]},focus(){doc.activeElement=this},querySelectorAll(q){return q==='[data-answer]'?buttons.filter(b=>b.dataset.answer!==undefined):q==='[data-ckey]'?buttons.filter(b=>b.dataset.ckey!==undefined):q==='[data-ikey]'?buttons.filter(b=>b.dataset.ikey!==undefined):q==='[data-canswer]'?buttons.filter(b=>b.dataset.canswer!==undefined):[]},querySelector(){return scroller},get innerHTML(){return ['feedback','i-feedback','c-feedback'].includes(id)?els[id+'-content']?.innerHTML??content:content},set innerHTML(value){this.innerHTMLWrites++;if(buttons.includes(doc.activeElement))doc.activeElement=null;content=value;buttons=[...value.matchAll(/<button class="([^"]*)" data-(ckey|ikey)="(\d+)" aria-label="([^"]*)" aria-pressed="(true|false)"><span class="key-number">([^<]*)<\/span>/g)].map(m=>{const attrs={'aria-pressed':m[5]},classes=new Set(m[1].split(' ')),number={textContent:m[6]};return {dataset:{[m[2]]:m[3]},attrs,classes,number,classList:{add(k){classes.add(k)},toggle(k,yes){yes?classes.add(k):classes.delete(k)}},setAttribute(k,v){attrs[k]=String(v)},querySelector(){return number},focus(){doc.activeElement=this}}});buttons.push(...[...value.matchAll(/<button class="([^"]*)"[^>]*data-answer="([^"]+)"[^>]*>([^<]*)<\/button>/g)].map(m=>{const attrs={},classes=new Set(m[1].split(' '));return {dataset:{answer:m[2]},attrs,classes,classList:{add(k){classes.add(k)},toggle(k,yes){yes?classes.add(k):classes.delete(k)}},setAttribute(k,v){attrs[k]=String(v)},focus(){doc.activeElement=this}}}));buttons.push(...[...value.matchAll(/<button class="([^"]*)" data-canswer="([^"]+)">([^<]+)<\/button>/g)].map(m=>{const attrs={},classes=new Set(m[1].split(' '));return {dataset:{canswer:m[2]},disabled:false,attrs,classes,classList:{toggle(k,yes){yes?classes.add(k):classes.delete(k)}},setAttribute(k,v){attrs[k]=String(v)},focus(){doc.activeElement=this}}}))}};return e}
 const mapButtons=Array.from({length:3},(_,i)=>({...element(),dataset:{map:String(i+1)}}));Object.assign(doc,{getElementById:id=>els[id]??=element(id),querySelectorAll:q=>q==='[data-map]'?mapButtons:[],querySelector:q=>{const match=q.match(/^\[data-answer="([^"]+)"\]$/);return match?els.answers?.querySelectorAll('[data-answer]').find(b=>b.dataset.answer===match[1]):element()}});class AudioContext{constructor(){this.state='running';this.currentTime=0;this.sampleRate=48000;this.destination={}}resume(){return Promise.resolve()}createOscillator(){const o={frequency:{value:0},connect(){},disconnect(){},start(time){voices.push(o.frequency.value);voiceStarts.push(time??this.currentTime??0)},stop(time){if(time===undefined)o.onended?.()}};return o}createGain(){return {gain:{setValueAtTime(){},exponentialRampToValueAtTime(){}},connect(){},disconnect(){}}}}
 for(const id of ['reading-actions','i-reading-actions','c-reading-actions'])doc.getElementById(id);
 const c={document:doc,window:{AudioContext,localStorage,...layout},setTimeout(fn,delay){const id=++timerId;timers.set(id,{fn,delay,due:clock+delay,cancelled:false,fired:false});return id},clearTimeout(id){if(timers.has(id))timers.get(id).cancelled=true}};vm.createContext(c);vm.runInContext(source,c);const run=s=>vm.runInContext(s,c);function advance(ms){const target=clock+ms;while(true){const t=[...timers.values()].filter(t=>!t.cancelled&&!t.fired&&t.due<=target).sort((a,b)=>a.due-b.due)[0];if(!t)break;clock=t.due;t.fired=true;t.fn()}clock=target}return {c,els,doc,mapButtons,timers,voices,voiceStarts,run,advance,preferences}}
@@ -24,27 +24,47 @@ for(const prefix of ['', 'i-', 'c-']){
  else{env.mapButtons[2].onclick();run('chordGame.start(4,0,0)')}
  env.flush();env.scrolls.length=0;
  const respond=()=>prefix===''?run('answer(0)'):prefix==='i-'?run('intervalGame.respond("degree",3)'):run('chordGame.respond("answer","C")');
- respond();env.flush();assert.equal(env.scrolls.length,1);assert.equal(env.scrolls[0].id,prefix+'feedback');assert.equal(env.scrolls[0].behavior,'smooth');
- respond();env.flush();assert.equal(env.scrolls.length,1); // Replaying does not move the page again.
+ respond();env.flush();assert.equal(env.scrolls.length,0);
+ respond();env.flush();assert.equal(env.scrolls.length,0);
  if(prefix==='c-'){
-   els['c-enter-keys'].onclick();env.flush();assert.equal(env.scrolls.at(-1).id,'c-question');
-   assert.equal(run('chordGame.state().step'),1);assert.ok(els['c-relations'].innerHTML.includes('<details class="relation-details">'));
+   els['c-enter-keys'].onclick();env.flush();assert.equal(env.scrolls.length,0);
+   assert.equal(run('chordGame.state().step'),1);
+   assert.ok(els['c-relations'].innerHTML.includes('<details class="relation-details">'));
+   assert.ok(!els['c-relations'].innerHTML.includes(' open'));
    assert.ok(els['c-relations'].innerHTML.includes('原位关系'));assert.ok(els['c-relations'].innerHTML.includes('本题排列'));
-   const before=env.scrolls.length;run('chordGame.respond("key",67);chordGame.respond("key",60)');env.flush();assert.equal(env.scrolls.length,before);
-   run('chordGame.respond("key",64)');env.flush();assert.equal(env.scrolls.at(-1).id,'c-feedback');assert.equal(run('chordGame.state().finished'),true);
+   assert.ok(els['c-relations'].innerHTML.includes('data-close-panel'));
+   run('chordGame.respond("key",67);chordGame.respond("key",60);chordGame.respond("key",64)');
+   env.flush();assert.equal(env.scrolls.length,0);assert.equal(run('chordGame.state().finished'),true);
  }
- const beforeNext=env.scrolls.length;els[prefix+'next'].onclick();env.flush();assert.equal(env.scrolls.length,beforeNext+1);assert.equal(env.scrolls.at(-1).id,prefix+'question');
+ els[prefix+'next'].onclick();env.flush();assert.equal(env.scrolls.length,0);
  assert.equal(els[prefix+'next'].hidden,true);
 }
 for(const options of [{visible:true},{phone:false},{reduced:true}]){
- const env=mobileEnvironment(options);env.run('mode=1;reset();current=0;render()');env.flush();env.scrolls.length=0;env.run('answer(0)');env.flush();
- assert.equal(env.scrolls.length,options.reduced?1:0);if(options.reduced)assert.equal(env.scrolls[0].behavior,'auto');
+ const env=mobileEnvironment(options);env.run('mode=1;reset();current=0;render()');env.flush();env.run('answer(0)');env.flush();
+ assert.equal(env.scrolls.length,0);
 }
-const resetDuringFrame=mobileEnvironment();resetDuringFrame.run('mode=1;reset();current=0;render();answer(0);reset()');resetDuringFrame.flush();
-assert.ok(resetDuringFrame.scrolls.every(s=>s.id==='question'));
-const switchDuringFrame=mobileEnvironment();switchDuringFrame.run('mode=1;reset();current=0;render();answer(0)');switchDuringFrame.mapButtons[1].onclick();switchDuringFrame.flush();assert.equal(switchDuringFrame.scrolls.length,0);
-const rotate=mobileEnvironment(),relationDetails={open:false};rotate.els['c-relations'].querySelector=()=>relationDetails;
-rotate.media.matches=false;rotate.changes.forEach(fn=>fn());assert.equal(relationDetails.open,true);rotate.media.matches=true;rotate.changes.forEach(fn=>fn());assert.equal(relationDetails.open,false);
+// Every compact selector executes the same mode reset and stays in sync with reset/advancement.
+const selectors=setup();
+for(let mode=0;mode<4;mode++){
+ selectors.els['mode-select'].value=String(mode);selectors.els['mode-select'].onchange();
+ assert.equal(selectors.run('mode'),mode);assert.equal(selectors.run('index'),0);
+ selectors.els['i-mode-select'].value=String(mode);selectors.els['i-mode-select'].onchange();
+ assert.equal(selectors.run('intervalGame.state().key').split(':')[2],String(mode));
+ assert.equal(selectors.run('intervalGame.state().round'),0);
+}
+for(let level=0;level<3;level++){
+ selectors.els['c-mode-select'].value=String(level);selectors.els['c-mode-select'].onchange();
+ selectors.run('chordGame.startRound(4,'+level+')');
+ assert.equal(selectors.els['c-mode-select'].value,String(level));
+ assert.equal(selectors.run('chordGame.state().round'),0);
+}
+const panelEnv=setup(),panelSummary={focused:false,focus(){this.focused=true}},panel={open:true,querySelector(){return panelSummary}};
+const closeButton={closest(){return panel}};
+panelEnv.doc.listeners.click({target:{closest(){return closeButton}}});assert.equal(panel.open,false);assert.equal(panelSummary.focused,true);
+panel.open=true;panelSummary.focused=false;const originalQuery=panelEnv.doc.querySelectorAll;
+panelEnv.doc.querySelectorAll=q=>q==='details[open]'?[panel]:originalQuery(q);
+panelEnv.doc.listeners.keydown({key:'x'});assert.equal(panel.open,true);
+panelEnv.doc.listeners.keydown({key:'Escape'});assert.equal(panel.open,false);assert.equal(panelSummary.focused,true);
 const observed=[],unobserved=[],resizeCallbacks=[],overflowFrames=[];
 class ResizeObserver{constructor(fn){resizeCallbacks.push(fn)}observe(node){observed.push(node)}unobserve(node){unobserved.push(node)}}
 const overflowEnv=setup(undefined,true,{ResizeObserver});overflowEnv.c.window.requestAnimationFrame=fn=>overflowFrames.push(fn);
@@ -58,7 +78,7 @@ scrollNodeNow.clientWidth=480;resizeCallbacks[0]([{target:scrollNodeNow}]);asser
 const oldScroller=scrollNodeNow;scrollNodeNow=scrollNode(0,0);refresh();assert.equal(overflowHint.hidden,true);assert.ok(unobserved.includes(oldScroller));
 scrollNodeNow.clientWidth=280;scrollNodeNow.scrollWidth=352;resizeCallbacks[0]([{target:scrollNodeNow}]);assert.equal(overflowHint.hidden,false);assert.ok(observed.includes(scrollNodeNow));
 scrollNodeNow=null;refresh();assert.ok(unobserved.length===2);
-console.log('Phone layout interactions passed in DOM simulation: completion/next-step visibility, no repeated replay scrolling, reduced motion, reset/map-switch cancellation, responsive chord details, overflow hints, edge indicators and observer cleanup. Real-device layout, swipe and audio remain unverified.');
+console.log('Compact lesson interactions passed in DOM simulation: no automatic page movement, mode selection/reset synchronization, closed chord disclosures with both interval explanations, close/Escape controls, keyboard overflow hints and observer cleanup. Browser geometry and real-device touch/audio remain unverified.');
 function solveNote(){run('while(!done){const stage=activeStage();answer(stage===0?(phase===0?(notes[current].line?"line":"space"):notes[current].pos):current)}')}
 function click(node){const start=voices.length,midi=Number(node.dataset.ckey);els['c-keyboard'].onclick({target:{closest:()=>node}});assert.equal(voices.length-start,4);const f=440*2**((midi-69)/12);for(let h=1;h<=4;h++)assert.ok(Math.abs(voices[start+h-1]-f*h)<1e-8);audioClicks++}
 for(const g of [2,3,4,5,6])for(let l=0;l<4;l++)for(let r=0;r<7;r++)for(let variant=0;variant<4;variant++){
@@ -369,7 +389,7 @@ const quietNote=setup('off');prepareNote(quietNote,4,2,0);tapNoteAnswer(quietNot
 assert.equal(quietNote.voices.length,0);assert.equal(quietNote.run('correct'),1);
 quietNote.els['sound-toggle'].onclick();tapNoteAnswer(quietNote,0);assert.equal(quietNote.voices.length,4);assert.equal(quietNote.run('correct'),1);
 assert.ok(html.includes('#answers .piano .black{pointer-events:auto}'));assert.ok(html.includes('#answers .piano .white{min-width:44px;'));
-assert.ok(!html.includes('点击下方按钮'));assert.ok(html.includes('读完后，点击“进入第二步 · 找琴键”。'));
+assert.ok(!html.includes('点击下方按钮'));assert.ok(html.includes('朗读后进入第二步。'));
 console.log('Passed '+noteKeyboardCases+' note-keyboard cases and '+noteKeyboardClicks+' pitched clicks across all five groups and both keyboard levels: wrong-key audio, replay, once-only scoring, mute, staff mapping and preserved key focus. Black-key hit interception is checked in source; actual browser hit testing remains unverified.');
 
 async function basicAudioRecoveryChecks(){
