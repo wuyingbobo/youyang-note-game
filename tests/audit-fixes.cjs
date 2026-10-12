@@ -60,6 +60,27 @@ scrollNodeNow.clientWidth=280;scrollNodeNow.scrollWidth=352;resizeCallbacks[0]([
 scrollNodeNow=null;refresh();assert.ok(unobserved.length===2);
 console.log('Phone layout interactions passed in DOM simulation: completion/next-step visibility, no repeated replay scrolling, reduced motion, reset/map-switch cancellation, responsive chord details, overflow hints, edge indicators and observer cleanup. Real-device layout, swipe and audio remain unverified.');
 function solveNote(){run('while(!done){const stage=activeStage();answer(stage===0?(phase===0?(notes[current].line?"line":"space"):notes[current].pos):current)}')}
+// Finish the fourth combined-note step by clicking actual keyboard buttons.
+// The continuation container must follow the same explicit ready state as its button.
+let combinedContinuationCases=0;
+for(const g of [2,3,4,5,6])for(let target=0;target<7;target++){
+ const env=setup(),{run,els}=env;
+ run(`group=${g};mode=3;reset();current=${target};render()`);
+ for(const command of ['answer(notes[current].line?"line":"space")','answer(notes[current].pos)',`answer(${target})`]){
+  run(command);assert.equal(els.next.hidden,true);assert.equal(els['reading-actions'].hidden,true);assert.equal(els.feedback.attrs['data-actions-ready'],'false');
+ }
+ assert.equal(run('phase'),3);assert.equal(els.step.textContent,'第4步 / 共4步 · 找琴键');
+ const nodes=els.answers.querySelectorAll('[data-answer]'),correctKey=nodes.find(b=>Number(b.dataset.answer)===target),wrongKey=nodes.find(b=>Number(b.dataset.answer)!==target);
+ els.answers.onclick({target:{closest:()=>wrongKey}});assert.equal(els.next.hidden,true);assert.equal(els['reading-actions'].hidden,true);
+ els.answers.onclick({target:{closest:()=>correctKey}});
+ assert.equal(run('done'),true);assert.equal(els.next.hidden,false);assert.equal(els.next.disabled,false);
+ assert.equal(els['reading-actions'].hidden,false);assert.equal(els.feedback.attrs['data-actions-ready'],'true');assert.equal(els.feedback.attrs['data-actions-kind'],'next');
+ assert.ok(els.feedback.textContent.includes(run('notes[current].name')));
+ els.answers.onclick({target:{closest:()=>correctKey}});assert.equal(els.next.hidden,false);assert.equal(els['reading-actions'].hidden,false);
+ els.next.onclick();assert.equal(els.next.hidden,true);assert.equal(els['reading-actions'].hidden,true);assert.equal(els.feedback.attrs['data-actions-ready'],'false');
+ combinedContinuationCases++;
+}
+console.log(`Combined-note fourth-step continuation passed ${combinedContinuationCases} keyboard-click cases, including wrong key, correct key, replay and next-question reset.`);
 function click(node){const start=voices.length,midi=Number(node.dataset.ckey);els['c-keyboard'].onclick({target:{closest:()=>node}});assert.equal(voices.length-start,4);const f=440*2**((midi-69)/12);for(let h=1;h<=4;h++)assert.ok(Math.abs(voices[start+h-1]-f*h)<1e-8);audioClicks++}
 for(const g of [2,3,4,5,6])for(let l=0;l<4;l++)for(let r=0;r<7;r++)for(let variant=0;variant<4;variant++){
  run(`group=${g};mode=${l};reset();current=${r};render()`);assert.equal(run('usedHint'),false);if(variant===1||variant===3)run('hint();hint()');if(variant>=2)run('answer("wrong");answer("wrong")');solveNote();const cs=run('stats'),kind=variant===0?'right':variant===1?'guided':'retried';assert.equal(cs[r][kind],1);assert.equal(sum(cs),1);assert.equal(run('correct'),variant===0?1:0);assert.equal(cs[r].wrong,variant>=2?1:0);run('hint();answer("wrong")');assert.equal(sum(run('stats')),1);assert.ok(els.feedback.textContent.includes('一起朗读'));noteCases++
@@ -176,7 +197,7 @@ for(const g of [2,3,4,5,6])for(let l=0;l<3;l++)for(let r=0;r<7;r++){
  assert.equal(doc.activeElement,correctButton);assert.equal(els['c-answers'].innerHTMLWrites,writes);assert.equal(sum(state('chordGame').counters),0);
  const lockedFeedback=els['c-feedback'].innerHTML,beforeWrong=voices.length;els['c-answers'].onclick({target:{closest:()=>answers.find(b=>b!==correctButton)}});assert.equal(voices.length,beforeWrong);assert.equal(els['c-feedback'].innerHTML,lockedFeedback);
  run('chordGame.hint()');assert.equal(els['c-feedback'].innerHTML,lockedFeedback);
- const entryVoices=voices.length;els['c-enter-keys'].focus();els['c-enter-keys'].onclick();assert.equal(voices.length,entryVoices);assert.equal(state('chordGame').step,1);assert.equal(els['c-keyboard'].hidden,false);assert.equal(els['c-reading-actions'].hidden,false);assert.equal(els['c-enter-keys'].disabled,true);assert.equal(els['c-enter-keys'].hidden,true);assert.equal(els['c-footer'].hidden,false);assert.equal(doc.activeElement,els['c-staff']);assert.equal(state('chordGame').selected.length,0);assert.equal(state('chordGame').finished,false);assert.equal(state('chordGame').score,0);assert.equal(els['c-next'].disabled,true);const keyWrites=els['c-keyboard'].innerHTMLWrites;els['c-enter-keys'].onclick();assert.equal(els['c-keyboard'].innerHTMLWrites,keyWrites);
+ const entryVoices=voices.length;els['c-enter-keys'].focus();els['c-enter-keys'].onclick();assert.equal(voices.length,entryVoices);assert.equal(state('chordGame').step,1);assert.equal(els['c-keyboard'].hidden,false);assert.equal(els['c-reading-actions'].hidden,true);assert.equal(els['c-feedback'].attrs['data-actions-ready'],'false');assert.equal(els['c-enter-keys'].disabled,true);assert.equal(els['c-enter-keys'].hidden,true);assert.equal(els['c-footer'].hidden,false);assert.equal(doc.activeElement,els['c-staff']);assert.equal(state('chordGame').selected.length,0);assert.equal(state('chordGame').finished,false);assert.equal(state('chordGame').score,0);assert.equal(els['c-next'].disabled,true);const keyWrites=els['c-keyboard'].innerHTMLWrites;els['c-enter-keys'].onclick();assert.equal(els['c-keyboard'].innerHTMLWrites,keyWrites);
  assert.ok(els['c-relations'].innerHTML.includes('data-chord-listen'));assert.equal(els['c-staff'].attrs.role,'button');assert.equal(els['c-staff'].attrs.tabindex,'0');
  const replayBefore=voices.length;els['c-relations'].onclick({target:{closest:()=>({})}});assert.equal(voices.length-replayBefore,12);voices.slice(replayBefore).forEach((f,i)=>assert.ok(Math.abs(f-expectedFrequencies[i])<1e-8));
  const staffBefore=voices.length;els['c-staff'].onclick();assert.equal(voices.length-staffBefore,12);voices.slice(staffBefore).forEach((f,i)=>assert.ok(Math.abs(f-expectedFrequencies[i])<1e-8));
@@ -203,14 +224,14 @@ cancelChord.mapButtons[1].onclick();assert.equal(cancelChord.run('activeVoices.s
 console.log(`Passed ${chordVoicingCases} first-step chord audio cases: exact displayed pitches and inversions, simultaneous start, all three sustained notes, silent wrong answers, mute, audio failure, cancellation and second-step staff highlighting.`);
 // Manual progression survives map switches and cannot skip an unanswered or reset question.
 const manualChord=setup();manualChord.mapButtons[2].onclick();manualChord.run('chordGame.start(4,0,0)');
-assert.equal(manualChord.els['c-reading-actions'].hidden,false);assert.equal(manualChord.els['c-enter-keys'].disabled,true);assert.equal(manualChord.els['c-enter-keys'].hidden,true);
+assert.equal(manualChord.els['c-reading-actions'].hidden,true);assert.equal(manualChord.els['c-enter-keys'].disabled,true);assert.equal(manualChord.els['c-enter-keys'].hidden,true);
 const entryClick=manualChord.els['c-enter-keys'].onclick;entryClick();assert.equal(manualChord.run('chordGame.state().step'),0);
-manualChord.run('chordGame.respond("answer","wrong")');assert.equal(manualChord.els['c-reading-actions'].hidden,false);entryClick();assert.equal(manualChord.run('chordGame.state().step'),0);
+manualChord.run('chordGame.respond("answer","wrong")');assert.equal(manualChord.els['c-reading-actions'].hidden,true);entryClick();assert.equal(manualChord.run('chordGame.state().step'),0);
 manualChord.run('chordGame.respond("answer","C")');manualChord.advance(60000);assert.equal(manualChord.run('chordGame.state().step'),0);
 manualChord.mapButtons[0].onclick();assert.equal(manualChord.run('activeVoices.size'),0);manualChord.advance(60000);manualChord.mapButtons[2].onclick();
 assert.equal(manualChord.run('chordGame.state().step'),0);assert.equal(manualChord.els['c-enter-keys'].disabled,false);assert.equal(manualChord.els['c-enter-keys'].hidden,false);assert.equal(manualChord.els['c-next'].hidden,true);assert.equal(manualChord.els['c-reading-actions'].hidden,false);
 assert.ok(manualChord.els['c-feedback'].textContent.includes('一起朗读'));manualChord.advance(60000);assert.equal(manualChord.run('chordGame.state().step'),0);
-manualChord.run('chordGame.start(3,1,0)');entryClick();assert.equal(manualChord.run('chordGame.state().step'),0);assert.equal(manualChord.run('chordGame.state().symbolConfirmed'),false);assert.equal(manualChord.els['c-reading-actions'].hidden,false);assert.equal(manualChord.els['c-footer'].hidden,false);
+manualChord.run('chordGame.start(3,1,0)');entryClick();assert.equal(manualChord.run('chordGame.state().step'),0);assert.equal(manualChord.run('chordGame.state().symbolConfirmed'),false);assert.equal(manualChord.els['c-reading-actions'].hidden,true);assert.equal(manualChord.els['c-footer'].hidden,false);
 manualChord.run('chordGame.respond("answer","C/E")');manualChord.els['sound-toggle'].onclick();manualChord.advance(60000);assert.equal(manualChord.run('chordGame.state().step'),0);
 const silentEntry=manualChord.voices.length;entryClick();assert.equal(manualChord.voices.length,silentEntry);assert.equal(manualChord.run('chordGame.state().step'),1);
 const manualWrites=manualChord.els['c-keyboard'].innerHTMLWrites;entryClick();assert.equal(manualChord.els['c-keyboard'].innerHTMLWrites,manualWrites);assert.equal(manualChord.run('chordGame.state().selected.length'),0);
@@ -358,6 +379,7 @@ for(const game of ['notes','intervals','chords'])for(const level of (game==='cho
  const env=setup(),{els,run,doc}=env,prefix=game==='notes'?'':game==='intervals'?'i-':'c-',card=prefix+'feedback',next=els[prefix+'next'],nextHandler=next.onclick;
  if(game==='notes')run(`mode=${level};group=4;reset()`);else if(game==='intervals')run(`intervalGame.start(4,${level},3,0)`);else run(`chordGame.start(4,${level},0)`);
  assert.equal(next.hidden,true);assert.equal(next.disabled,true);assert.equal(els[prefix+'footer'].hidden,false);
+ assert.equal(els[prefix+'reading-actions'].hidden,true);assert.equal(els[card].attrs['data-actions-ready'],'false');
  if(game==='notes'){
    run('hint();answer("wrong")');assert.equal(next.hidden,true);
    run('while(!done){const stage=activeStage();answer(stage===0?(phase===0?(notes[current].line?"line":"space"):notes[current].pos):current)}');
@@ -373,13 +395,17 @@ for(const game of ['notes','intervals','chords'])for(const level of (game==='cho
    run(`chordGame.hint();chordGame.respond('answer','${symbolForms[level][0]}')`);
    const enter=els['c-enter-keys'],enterHandler=enter.onclick;
    assert.equal(enter.hidden,false);assert.equal(next.hidden,true);
+   assert.equal(els['c-reading-actions'].hidden,false);assert.equal(els[card].attrs['data-actions-kind'],'enter');
    run(`chordGame.respond('answer','${symbolForms[level][0]}')`);assert.equal(enter.onclick,enterHandler);assert.equal(enter.hidden,false);
    enter.onclick();assert.equal(enter.hidden,true);assert.equal(next.hidden,true);
+   assert.equal(els['c-reading-actions'].hidden,true);assert.equal(els[card].attrs['data-actions-ready'],'false');
    const tones=run('chordGame.state().tones');for(const i of [2,0,1])run(`chordGame.respond('key',${tones[i].midi})`);
  }
  assert.equal(next.hidden,false);assert.equal(next.disabled,false);assert.equal(els[prefix+'footer'].hidden,true);assert.ok(els[card].textContent.includes('一起朗读'));
+ assert.equal(els[prefix+'reading-actions'].hidden,false);assert.equal(els[card].attrs['data-actions-ready'],'true');assert.equal(els[card].attrs['data-actions-kind'],'next');
  assert.equal(next.onclick,nextHandler);assert.equal(els[card].innerHTMLWrites,0);assert.ok(els[card+'-content'].innerHTMLWrites>1);
  next.focus();next.onclick();assert.equal(next.hidden,true);assert.equal(next.disabled,true);assert.equal(next.onclick,nextHandler);assert.equal(doc.activeElement,els[prefix+'question']);assert.equal(els[prefix+'footer'].hidden,false);
+ assert.equal(els[prefix+'reading-actions'].hidden,true);assert.equal(els[card].attrs['data-actions-ready'],'false');
 }
 assert.ok(html.includes('.reading-actions{display:flex;justify-content:flex-end;'));
 assert.ok(html.includes('min-height:44px;flex:none;margin:0}'));
