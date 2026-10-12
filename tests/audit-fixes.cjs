@@ -60,6 +60,17 @@ scrollNodeNow.clientWidth=280;scrollNodeNow.scrollWidth=352;resizeCallbacks[0]([
 scrollNodeNow=null;refresh();assert.ok(unobserved.length===2);
 console.log('Phone layout interactions passed in DOM simulation: completion/next-step visibility, no repeated replay scrolling, reduced motion, reset/map-switch cancellation, responsive chord details, overflow hints, edge indicators and observer cleanup. Real-device layout, swipe and audio remain unverified.');
 function solveNote(){run('while(!done){const stage=activeStage();answer(stage===0?(phase===0?(notes[current].line?"line":"space"):notes[current].pos):current)}')}
+// Read the clef before its location, including intermediate combined-note feedback.
+for(const [g,target,clef,position] of [
+ [4,0,'高音谱表','下加一线'],[4,4,'高音谱表','第二线'],[3,0,'低音谱表','第二间'],
+ [2,0,'低音谱表','下加二线'],[5,6,'高音谱表','上加二间'],[6,0,'高音谱表','上加二线'],[6,6,'高音谱表','上加五线']
+])for(const level of [0,3]){
+ const env=setup();env.run(`group=${g};mode=${level};reset();current=${target};render();answer(notes[current].line?'line':'space');answer(${JSON.stringify(position)})`);
+ const spoken=env.els.feedback.textContent;
+ assert.ok(spoken.includes('一起朗读：'+clef+position),`Reading sequence must be clef then location: ${spoken}`);
+ assert.equal(env.els.next.hidden,level===3);
+}
+console.log('Position reading order passed 14 treble/bass/ledger cases in position and combined-note levels.');
 // Finish the fourth combined-note step by clicking actual keyboard buttons.
 // The continuation container must follow the same explicit ready state as its button.
 let combinedContinuationCases=0;

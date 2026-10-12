@@ -417,12 +417,12 @@ function setReadingActions(prefix,nextReady=false,enterReady=false){
   $(prefix+'footer').hidden=nextReady||enterReady;
   if(ready!==wasReady)revealPhoneReading(prefix,ready);
 }
-function paintReadingCard(id,kind,message,{symbol='',notes='',detail='',solfege=''}={}){
+function paintReadingCard(id,kind,message,{symbol='',notes='',detail='',solfege='',context=''}={}){
   const escape=value=>String(value).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   const e=$(id);e.className='feedback reading-card '+kind+(!kind&&!symbol&&!notes?' is-prompt':'');
   const pitch=symbol?(solfege?`<span class="reading-pitch"><strong class="reading-symbol">${escape(symbol)}</strong><span class="reading-solfege">（${escape(solfege)}）</span></span>`:`<strong class="reading-symbol">${escape(symbol)}</strong>`):'';
   $(id+'-content').innerHTML=`<div class="feedback-message">${escape(message)}</div>`+
-    (symbol||notes?`<div class="reading-line"><span class="reading-label">一起朗读：</span>${pitch}${notes?`<span class="reading-notes">${escape(notes)}</span>`:''}</div>`:'')+
+    (symbol||notes?`<div class="reading-line"><span class="reading-label">一起朗读：</span>${context?`<span class="reading-detail reading-context">${escape(context)}</span>`:''}${pitch}${notes?`<span class="reading-notes">${escape(notes)}</span>`:''}</div>`:'')+
     (detail?`<div class="reading-detail">${escape(detail)}</div>`:'');
 }
 function setLearningFeedback(id,kind,text){
@@ -434,7 +434,7 @@ function setLearningFeedback(id,kind,text){
   const position=answer.match(/^(高音谱表|低音谱表)(.+)$/);
   const data=note?{symbol:note[1],solfege:note[2],detail:note[3]}:
     interval?{symbol:interval[4],notes:interval[1]+' → '+interval[2],detail:interval[3]}:
-    position?{symbol:position[2],detail:position[1]}:{symbol:answer};
+    position?{symbol:position[2],context:position[1]}:{symbol:answer};
   paintReadingCard(id,kind,message,data);
 }
 let activeMap=1,soundEpoch=0,soundEnabled=true;const pendingSounds=new Set(),activeVoices=new Set(),soundPreferenceKey='bobo-music-note-lab.sound';
