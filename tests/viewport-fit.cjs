@@ -28,7 +28,8 @@ function environment(width,height,{overflow={},collisionModes=[],negativeModes=[
  const details={open:autoOpen||userOpen,automatic:autoOpen,removeAttribute(name){assert.equal(name,'data-auto-open');this.automatic=false}};
  const root={get scrollHeight(){return height+(overflow[mode()]||0)}};
  Object.defineProperty(body,'scrollHeight',{get(){return root.scrollHeight}});
- const document={body,documentElement:root,fonts:{ready:{then(fn){fontReady=fn}}},querySelector(selector){return selector.startsWith('main>')?map:{}},querySelectorAll(selector){
+ const report={open:false};
+ const document={body,documentElement:root,fonts:{ready:{then(fn){fontReady=fn}}},querySelector(selector){return selector.startsWith('main>')?map:selector==='.report[open]'?(report.open?report:null):{}},querySelectorAll(selector){
   if(selector==='header,.map-toolbar')return [header,toolbar];
   if(selector==='.relation-details[open][data-auto-open]')return details.open&&details.automatic?[details]:[];
   return [...chrome,...blocks,header];
@@ -37,7 +38,7 @@ function environment(width,height,{overflow={},collisionModes=[],negativeModes=[
  class ResizeObserver{constructor(fn){observers.resize=fn}observe(){}}
  const window={innerWidth:width,innerHeight:height,visualViewport:{width,height,addEventListener(name,fn){visualEvents[name]=fn}},requestAnimationFrame(fn){frames.push(fn)},addEventListener(name,fn){events[name]=fn},getComputedStyle(e){return {display:'block',visibility:e===next&&hiddenButtonModes.includes(mode())?'hidden':'visible'}},MutationObserver,ResizeObserver};
  vm.runInNewContext(source,{document,window});
- return {window,body,styles,frames,events,visualEvents,observers,details,flush(){let n=0;while(frames.length){assert.ok(++n<10);frames.shift()()}},fontReady};
+ return {window,body,styles,frames,events,visualEvents,observers,details,report,flush(){let n=0;while(frames.length){assert.ok(++n<10);frames.shift()()}},fontReady};
 }
 let cases=0;
 for(const [width,height] of [[320,568],[360,640],[390,844],[412,915],[667,375],[844,390],[972,494],[1366,768],[1440,900]]){
@@ -57,6 +58,10 @@ const buttonBelow=environment(390,640,{buttonOverflowModes:[0]});assert.equal(bu
 const buttonOutsideCard=environment(390,640,{cardOverflowModes:[0]});assert.equal(buttonOutsideCard.body.dataset.fit,'1');assert.equal(buttonOutsideCard.window.youyangViewportAudit().fit,true);
 const invisibleButton=environment(390,640,{hiddenButtonModes:[0]});assert.equal(invisibleButton.body.dataset.fit,'1');assert.equal(invisibleButton.window.youyangViewportAudit().fit,true);
 const noVisibleContinuation=environment(390,640,{hiddenButtonModes:[0,1,2]});assert.equal(noVisibleContinuation.window.youyangViewportAudit().fit,false);assert.deepEqual(Array.from(noVisibleContinuation.window.youyangViewportAudit().missingControls),['next']);
+const recordRoom={0:100},stableRecord=environment(390,640,{overflow:recordRoom});
+assert.equal(stableRecord.body.dataset.fit,'1');delete recordRoom[0];stableRecord.report.open=true;
+stableRecord.window.youyangFitViewport();assert.equal(stableRecord.body.dataset.fit,'1','Opening a record must not move its launcher by changing layout');
+stableRecord.report.open=false;stableRecord.window.youyangFitViewport();assert.equal(stableRecord.body.dataset.fit,'0');
 const openedByUser=environment(390,640,{overflow:{0:100},userOpen:true});assert.equal(openedByUser.details.open,true);
 const resized=environment(390,640);resized.window.visualViewport.height=600;resized.visualEvents.resize();resized.events.resize();resized.observers.mutation();resized.observers.resize();resized.fontReady();assert.equal(resized.frames.length,1);resized.flush();assert.equal(resized.styles.get('--app-height'),'600px');
 resized.window.visualViewport.height=0;resized.window.innerHeight=0;resized.window.youyangFitViewport();assert.equal(resized.styles.get('--app-height'),'600px');
