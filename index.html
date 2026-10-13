@@ -335,6 +335,43 @@ body.viewport-fit{height:var(--app-height,100dvh)!important;min-height:0!importa
 .settings-popover{max-height:min(70dvh,var(--panel-room,calc(var(--app-height,100dvh) - 140px)));overscroll-behavior:contain}
 .settings-panel-header{position:sticky;top:0;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:8px;margin:-16px -16px 12px;padding:8px 16px;background:white;border-bottom:1px solid #edf0f6;color:#526380;font-size:14px;font-weight:650}
 
+/* Phone chord keys use one layout in every fit mode and answer state. */
+.relation-identity{grid-column:1/-1;display:none}
+@media(max-width:640px){
+  .viewport-fit #chord-map #c-play[data-chord-stage="keys"]{display:flex;flex-direction:column;min-height:0;gap:4px}
+  .viewport-fit #chord-map #c-play[data-chord-stage="keys"]>h2{display:flex;align-items:center;justify-content:center;min-height:40px;padding-right:96px}
+  .viewport-fit #chord-map #c-play[data-chord-stage="keys"] .exercise-footer{position:absolute;top:0;right:0;margin:0;padding:0;min-height:40px}
+  .viewport-fit #chord-map #c-play[data-chord-stage="keys"] .exercise-footer .secondary{min-height:40px;font-size:12px;padding:6px 8px}
+  .viewport-fit #chord-map #c-play[data-chord-stage="keys"] #c-feedback{flex:none;min-height:0;grid-template-columns:minmax(0,1fr) auto;padding:7px 10px;gap:8px}
+  .viewport-fit #chord-map #c-play[data-chord-stage="keys"] .reading-content{grid-column:1;grid-row:1;min-width:0}
+  .viewport-fit #chord-map #c-play[data-chord-stage="keys"] .reading-actions{grid-column:2;grid-row:1;align-self:center;width:88px;max-width:88px}
+  .viewport-fit #chord-map #c-play[data-chord-stage="keys"] #c-feedback[data-actions-ready="false"] .reading-content{grid-column:1/-1}
+  .viewport-fit #chord-map #c-play[data-chord-stage="keys"] .exercise-body{display:grid!important;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(48px,1fr) auto;align-items:stretch;flex:1;min-height:0;gap:4px;padding:0}
+  .viewport-fit #chord-map #c-play[data-chord-stage="keys"] #c-staff{grid-column:1;grid-row:1;align-self:stretch;width:100%;height:100%!important;min-height:48px;max-height:170px;margin:0}
+  .viewport-fit #chord-map #c-play[data-chord-stage="keys"] .response-panel{grid-column:1;grid-row:2;align-self:stretch;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto auto;min-width:0;min-height:max-content;gap:4px}
+  .viewport-fit #chord-map #c-play[data-chord-stage="keys"] #c-answers{display:none}
+  .viewport-fit #chord-map #c-play[data-chord-stage="keys"] #c-keyboard{grid-column:1;grid-row:1;order:0;min-width:0}
+  .viewport-fit #chord-map #c-play[data-chord-stage="keys"] #c-keyboard .keyboard-scroll{overflow-x:auto;overflow-y:hidden;padding:2px 2px 4px}
+  .viewport-fit #chord-map #c-play[data-chord-stage="keys"] #c-keyboard .chord-piano{height:clamp(88px,14dvh,104px)!important;min-width:var(--keyboard-width)!important;width:100%!important}
+  .viewport-fit #chord-map #c-play[data-chord-stage="keys"] #c-keyboard .keyboard-help{display:none}
+  .viewport-fit #chord-map #c-play[data-chord-stage="keys"] #c-relations{grid-column:1;grid-row:2;order:1;position:static;display:grid;grid-template-columns:82px minmax(0,1fr);gap:6px;padding:0;border:0;background:transparent;min-height:44px}
+  .viewport-fit #chord-map #c-play[data-chord-stage="keys"] .chord-heading{grid-column:1;grid-row:1;margin:0;padding:0;min-width:0}
+  .viewport-fit #chord-map #c-play[data-chord-stage="keys"] .chord-identity,
+  .viewport-fit #chord-map #c-play[data-chord-stage="keys"] .chord-bass{display:none}
+  .viewport-fit #chord-map #c-play[data-chord-stage="keys"] .relation-details{grid-column:2;grid-row:1;position:static;min-width:0;margin:0;border:0}
+  .viewport-fit #chord-map #c-play[data-chord-stage="keys"] .relation-details>summary{display:list-item;min-height:44px;padding:11px 8px;border:1px solid #d9e1f1;border-radius:8px;background:white;font-size:12px;line-height:20px}
+  .viewport-fit #chord-map #c-play[data-chord-stage="keys"] .relation-details[open]>.relation-columns{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(460px,calc(100vw - 24px));max-height:calc(var(--app-height,100dvh) - 40px);overflow:auto;margin:0;padding:12px;border:1px solid #d9e1f1;border-radius:14px;background:white;box-shadow:0 10px 40px #18233c33;z-index:35}
+  .viewport-fit #chord-map #c-play[data-chord-stage="keys"] .relation-identity{display:block;font-size:13px;line-height:20px;color:#526380}
+  .viewport-fit #chord-map #c-play[data-chord-stage="keys"] .relation-identity strong{color:#2252df}
+  .viewport-fit #chord-map #c-play[data-chord-stage="keys"] .relation-close{display:block;grid-column:1/-1;min-height:44px;padding:6px 12px;border:0;border-radius:9px;background:#eef3fc;color:#2252df;font:inherit;font-size:14px;font-weight:650}
+  .viewport-fit #chord-map #c-play[data-chord-stage="keys"] #c-audio-notice{grid-column:1;grid-row:3;order:2;margin:0}
+}
+@media(min-width:481px) and (max-width:640px),(max-width:480px) and (max-height:520px){
+  .viewport-fit #chord-map #c-play[data-chord-stage="keys"] .exercise-body{grid-template-columns:minmax(80px,.28fr) minmax(0,.72fr);grid-template-rows:minmax(0,1fr);gap:8px}
+  .viewport-fit #chord-map #c-play[data-chord-stage="keys"] #c-staff{max-height:220px}
+  .viewport-fit #chord-map #c-play[data-chord-stage="keys"] .response-panel{grid-column:2;grid-row:1;align-self:center}
+}
+
 </style></head><body class="viewport-fit" data-fit="0"><header><div class="brand">♪ 悠扬五线谱识谱游戏</div><span class="tag">按音组学习 · 每次10题</span><button id="sound-toggle" class="sound-toggle" type="button" aria-pressed="true" aria-label="声音已开启，点击关闭声音">声音开</button></header><main><div class="map-toolbar"><div class="map-switch" aria-label="选择学习地图"><button class="active" data-map="1" aria-label="地图一 · 认识音符"><span class="map-label-full" aria-hidden="true">地图一 · 认识音符</span><span class="map-label-short" aria-hidden="true">音符</span></button><button data-map="2" aria-label="地图二 · 认识音程"><span class="map-label-full" aria-hidden="true">地图二 · 认识音程</span><span class="map-label-short" aria-hidden="true">音程</span></button><button data-map="3" aria-label="地图三 · 认识和弦"><span class="map-label-full" aria-hidden="true">地图三 · 认识和弦</span><span class="map-label-short" aria-hidden="true">和弦</span></button></div></div><section id="note-map"><h1>看见一个音，找到它。</h1><p style="margin:0;color:#627089">先观察，再作答。可以慢慢想，遇到困难就看提示。</p><div class="lesson-toolbar"><nav aria-label="选择关卡"><button class="active" data-mode="0">① 辨线间</button><button data-mode="1">② 认音名</button><button data-mode="2">③ 找琴键</button><button data-mode="3">④ 综合闯关</button></nav><details class="practice-settings"><summary>音组设置</summary><div class="settings-popover"><div class="settings-panel-header"><span>练习设置</span><button class="panel-close" type="button" data-close-panel aria-label="关闭练习设置">关闭设置</button></div><div class="groups" aria-label="选择学习音组"><span>学习音组</span><button data-group="4" class="active">第4组（小字一组）· C4—B4</button><button data-group="3" class="">第3组（小字组）· C3—B3</button><button data-group="5" class="">第5组（小字二组）· C5—B5</button><button data-group="2" class="">第2组（大字组）· C2—B2</button><button data-group="6" class="">第6组（小字三组）· C6—B6</button></div></div></details></div><section class="card"><div class="top"><span id="level"></span><span id="score"></span></div><div class="track"><div class="fill" id="progress"></div></div><div id="play"><h2 id="question" tabindex="-1"></h2><div class="step" id="step"></div><div class="feedback reading-card" id="feedback"><div class="reading-content" id="feedback-content" role="status" aria-live="polite" aria-atomic="true"></div><div id="reading-actions" class="reading-actions" role="group" aria-label="继续练习"><button class="primary" id="next" type="button" hidden disabled>下一题</button></div></div><div class="exercise-body"><svg class="staff" id="staff" viewBox="0 0 520 220" role="img" aria-label="高音谱表上的待认音符"></svg><div class="response-panel"><div id="answers"></div><p id="audio-notice" class="audio-notice" role="status" hidden></p></div></div><div class="exercise-footer" id="footer"><div class="actions"><button class="secondary" id="hint">给我一个提示</button></div></div></div><div id="end" class="complete" hidden></div></section><div class="below"><span id="range"></span><span>答对后，请把正确答案朗读一遍，再继续。</span></div><details class="report"><summary aria-label="本轮学习记录"><span class="report-label-full">本轮学习记录</span><span class="report-label-short" aria-hidden="true">记录</span><button class="panel-close" type="button" data-close-panel aria-label="关闭学习记录">关闭记录</button></summary><p style="color:#627089;font-size:14px">记录只保留在当前页面；切换关卡或音组会开始新一轮。复习会重新随机出题，并保留当前页面内各音组、关卡的薄弱项，增加需要帮助的音的练习机会。</p><table><thead><tr><th>音</th><th>独立答对</th><th>提示后答对</th><th>重试后答对</th></tr></thead><tbody id="stats"></tbody></table><p class="progression-tip">独立答对：未用提示且未答错；提示后答对：用过提示但未答错；重试后答对：本题曾答错。每题完成后只记录一次，三类都值得鼓励。</p></details></section><section id="interval-map" hidden>
 <h1>看见两个音，认出它们的关系。</h1><p style="margin:0;color:#627089">自由选择音程范围。数音程时，起点也算一。</p>
 <div class="lesson-toolbar"><nav aria-label="音程关卡"><button class="active" data-imode="0">① 看谱认几度</button><button data-imode="1">② 琴键认几度</button><button data-imode="2">③ 找目标琴键</button><button data-imode="3">④ 综合闯关</button></nav><details class="practice-settings"><summary>音组与范围</summary><div class="settings-popover"><div class="settings-panel-header"><span>练习设置</span><button class="panel-close" type="button" data-close-panel aria-label="关闭练习设置">关闭设置</button></div><div class="groups" aria-label="选择起点音组"><span>起点音组</span><button data-igroup="4" class="active">第4组（小字一组）· C4—B4</button><button data-igroup="3">第3组（小字组）· C3—B3</button><button data-igroup="5">第5组（小字二组）· C5—B5</button><button data-igroup="2">第2组（大字组）· C2—B2</button><button data-igroup="6">第6组（小字三组）· C6—B6</button></div>
@@ -656,8 +693,8 @@ function relationColumn(title,list,current=false){
     [0,1].map(i=>`<div class="relation-row"><span class="relation-path" aria-label="${roles[list[i].role]}到${roles[list[i+1].role]}">${roles[list[i].role]}<span aria-hidden="true">→</span>${roles[list[i+1].role]}</span><strong>${intervalQuality(list[i],list[i+1])}</strong></div>`).join('')+'</section>';
 }
 function showRelations(){
-  const compact=phoneLayout?.matches||(document.body?.dataset?.fit&&document.body.dataset.fit!=='0');
-  get('relations').innerHTML=`<div class="chord-heading"><div class="chord-identity"><strong>${chordSymbol()}</strong><span>${chordName()}</span></div><div class="chord-tools"><div class="chord-bass">最低音 <strong>${tones[0].name}</strong></div><button id="c-listen" class="chord-listen" type="button" data-chord-listen>♪ 听和弦</button></div></div><details class="relation-details"${compact?'':' open data-auto-open="true"'}><summary>查看音程关系</summary><div class="relation-columns">${relationColumn('原位关系',baseTones)}${relationColumn('本题排列',tones,true)}<button class="relation-close" type="button" data-relation-close>关闭说明</button></div></details>`;updateSoundToggle();
+  const compact=window.matchMedia?.('(max-width:640px)').matches||phoneLayout?.matches||(document.body?.dataset?.fit&&document.body.dataset.fit!=='0');
+  get('relations').innerHTML=`<div class="chord-heading"><div class="chord-identity"><strong>${chordSymbol()}</strong><span>${chordName()}</span></div><div class="chord-tools"><div class="chord-bass">最低音 <strong>${tones[0].name}</strong></div><button id="c-listen" class="chord-listen" type="button" data-chord-listen>♪ 听和弦</button></div></div><details class="relation-details"${compact?'':' open data-auto-open="true"'}><summary>查看音程关系</summary><div class="relation-columns"><div class="relation-identity"><strong>${chordSymbol()}</strong> · ${chordName()} · 最低音${tones[0].name}</div>${relationColumn('原位关系',baseTones)}${relationColumn('本题排列',tones,true)}<button class="relation-close" type="button" data-relation-close>关闭说明</button></div></details>`;updateSoundToggle();
 }
 function listenVoicing(enable=false){if(step!==1)return;if(enable&&!soundEnabled)setSoundEnabled(true);pianoVoicing(tones.map(n=>n.midi),audioNotice)}
 function task(){return step===0?{type:'symbol'}:{type:'key'}}
@@ -675,18 +712,19 @@ function keyboard(){
 function audioNotice(failed){const e=get('audio-notice');if(e){e.hidden=!failed;e.textContent=failed==='muted'?mutedSoundMessage:failed?'声音未开启或已暂停，'+(step===0?'请再点一次正确答案重试':'请点“听和弦”或琴键重试')+'，并检查设备音量。':''}}
 function updateKeyboardMarks(){get('keyboard').querySelectorAll('[data-ckey]').forEach(b=>{const midi=Number(b.dataset.ckey),selected=selectedKeys.has(midi),miss=midi===wrongKey;b.classList.toggle('mark',selected);b.classList.toggle('miss',miss);b.setAttribute('aria-pressed',String(selected));b.querySelector('.key-number').textContent=selected?'✓':miss?'×':''})}
 function setFeedback(kind,message,data={}){paintReadingCard('c-feedback',kind,message,data)}
-function keyProgress(){get('step').textContent=`第2步 / 共2步 · 找三个白键 · 已找到 ${selectedKeys.size} / 3`}
+function keyProgress(){get('step').textContent=`第2步 / 共2步 · 顺序不限 · 已找到 ${selectedKeys.size} / 3`}
 function answerButtons(options){return '<div class="choices">'+options.map(o=>`<button class="choice position-choice" data-canswer="${o.value}">${o.label}</button>`).join('')+'</div>'}
 function controls(){
   const t=task();
+  get('play').setAttribute('data-chord-stage',t.type==='key'?'keys':'symbol');
   setReadingActions('c-');
-  get('step').textContent=t.type==='symbol'?'第1步 / 共2步 · 认识和弦记号':`第2步 / 共2步 · 找三个白键 · 已找到 ${selectedKeys.size} / 3`;
+  get('step').textContent=t.type==='symbol'?'第1步 / 共2步 · 认识和弦记号':`第2步 / 共2步 · 顺序不限 · 已找到 ${selectedKeys.size} / 3`;
   get('keyboard').hidden=t.type!=='key';get('relations').hidden=t.type!=='key';drawStaff();
   if(t.type==='symbol'){
     get('relations').innerHTML='';get('question').textContent='这个和弦的现代记号是什么？';
     get('answers').innerHTML=answerButtons(symbols.map((_,i)=>({value:chordSymbol(i),label:chordSymbol(i)})))+(level>0?'<p class="keyboard-help">斜线前是和弦，斜线后用大写字母表示最低音的音名，不写音组。</p>':'');
   }else{
-    get('question').textContent='找到三个白键，顺序不限；点键可听音。';get('answers').innerHTML='';
+    get('question').textContent='找齐三个白键';get('answers').innerHTML='';
     showRelations();keyboard();
   }
 }
@@ -875,7 +913,7 @@ document.querySelectorAll('.practice-settings').forEach(d=>{d.addEventListener('
   window.visualViewport?.addEventListener('resize',schedule,{passive:true});
   if(typeof window.MutationObserver==='function'){
     const observer=new window.MutationObserver(schedule);
-    observer.observe(document.querySelector('main'),{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['hidden','class','open','data-actions-ready','data-actions-kind']});
+    observer.observe(document.querySelector('main'),{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['hidden','class','open','data-actions-ready','data-actions-kind','data-chord-stage']});
   }
   if(typeof window.ResizeObserver==='function'){
     const observer=new window.ResizeObserver(schedule);
