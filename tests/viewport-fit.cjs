@@ -2,7 +2,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
 const source=html.slice(html.indexOf('(function installViewportFit(){'),html.indexOf('</script>',html.indexOf('(function installViewportFit(){')));
 // These are supplied DOM rectangles, not screenshots or real browser layout results.
-function environment(width,height,{overflow={},collisionModes=[],negativeModes=[],autoOpen=false,userOpen=false,buttonOverflowModes=[],cardOverflowModes=[],hiddenButtonModes=[]}={}){
+function environment(width,height,{overflow={},collisionModes=[],negativeModes=[],autoOpen=false,userOpen=false,buttonOverflowModes=[],cardOverflowModes=[],hiddenButtonModes=[],responseOverlapModes=[],keyboardClipModes=[],auditResponse=false}={}){
  const frames=[],events={},visualEvents={},observers={},styles=new Map();let fontReady;
  const body={dataset:{fit:'0'},style:{setProperty(k,v){styles.set(k,v)}},getBoundingClientRect(){return box(0,0,width,height)}};
  const mode=()=>Number(body.dataset.fit),box=(left,top,w,h)=>({left,top,right:left+w,bottom:top+h,width:w,height:h});
@@ -19,10 +19,20 @@ function environment(width,height,{overflow={},collisionModes=[],negativeModes=[
  const readingText=element('feedback-content',m=>box(8,232,width-100,m===3?44:60));
  const readingParts=[readingText,next];
  blocks[2].querySelectorAll=()=>readingParts;
+ const panel=blocks[4];
+ const within=(m,offset,h,w)=>{const r=panel.getBoundingClientRect();return box(r.left,r.top+offset,w??r.width,h)};
+ const identity=element('c-relations',m=>within(m,6,responseOverlapModes.includes(m)?40:20));
+ const keyboard=element('c-keyboard',m=>within(m,responseOverlapModes.includes(m)?30:32,keyboardClipModes.includes(m)?30:50));
+ const piano=element('chord-piano',m=>within(m,responseOverlapModes.includes(m)?30:32,50,panel.getBoundingClientRect().width+240));
+ const scroller={getBoundingClientRect:()=>keyboard.getBoundingClientRect()};
+ piano.closest=selector=>selector==='.keyboard-scroll'?scroller:null;
+ panel.querySelectorAll=()=>auditResponse?[identity,keyboard]:[];
  const chrome=[element('lesson-toolbar',()=>box(0,88,width,44)),element('top',()=>box(0,132,width,20))];
  const map={querySelectorAll(selector){
   if(selector==='.reading-actions button:not([hidden])')return [next];
   if(selector==='.reading-card')return [blocks[2]];
+  if(selector==='.response-panel')return [panel];
+  if(selector==='.response-panel .piano,.response-panel .interval-piano')return auditResponse?[piano]:[];
   return selector.startsWith('h2,')?blocks:[...chrome,...blocks,...(selector.includes('.reading-content')?readingParts:[])];
  }};
  const details={open:autoOpen||userOpen,automatic:autoOpen,removeAttribute(name){assert.equal(name,'data-auto-open');this.automatic=false}};
@@ -53,6 +63,19 @@ const landscape=environment(844,375,{overflow:{0:120,1:60}});assert.equal(landsc
 const tooSmall=environment(390,568,{overflow:{0:90,1:30,2:12}});assert.equal(tooSmall.body.dataset.fit,'2');assert.equal(tooSmall.window.youyangViewportAudit().fit,false);assert.equal(tooSmall.window.youyangViewportAudit().documentOverflow,12);
 const overlap=environment(390,640,{collisionModes:[0]});assert.equal(overlap.body.dataset.fit,'1');assert.equal(overlap.window.youyangViewportAudit().fit,true);
 const above=environment(390,640,{negativeModes:[0]});assert.equal(above.body.dataset.fit,'1');
+// Both parent rectangles fit; the nested identity still obscures a keyboard.
+const internalOverlap=environment(619,494,{auditResponse:true,responseOverlapModes:[0,1]});
+assert.equal(internalOverlap.body.dataset.fit,'2');assert.equal(internalOverlap.window.youyangViewportAudit().fit,true);
+const blockedEveryMode=environment(390,640,{auditResponse:true,responseOverlapModes:[0,1,2]});
+assert.equal(blockedEveryMode.window.youyangViewportAudit().fit,false);
+assert.ok(blockedEveryMode.window.youyangViewportAudit().collisions.some(c=>c.first==='c-relations'&&c.second==='c-keyboard'));
+const clippedKeys=environment(619,494,{auditResponse:true,keyboardClipModes:[0,1]});
+assert.equal(clippedKeys.body.dataset.fit,'2');assert.equal(clippedKeys.window.youyangViewportAudit().fit,true);
+const clippedEveryMode=environment(390,640,{auditResponse:true,keyboardClipModes:[0,1,2]});
+assert.equal(clippedEveryMode.window.youyangViewportAudit().fit,false);
+assert.ok(clippedEveryMode.window.youyangViewportAudit().contentOverflow.some(c=>c.id==='chord-piano'));
+const scrollableKeys=environment(390,640,{auditResponse:true});
+assert.equal(scrollableKeys.window.youyangViewportAudit().fit,true,'Horizontal keyboard overflow is intentional and must remain scrollable');
 // The reading card can fit while its continuation button is outside or invisible.
 const buttonBelow=environment(390,640,{buttonOverflowModes:[0]});assert.equal(buttonBelow.body.dataset.fit,'1');assert.equal(buttonBelow.window.youyangViewportAudit().fit,true);
 const buttonOutsideCard=environment(390,640,{cardOverflowModes:[0]});assert.equal(buttonOutsideCard.body.dataset.fit,'1');assert.equal(buttonOutsideCard.window.youyangViewportAudit().fit,true);

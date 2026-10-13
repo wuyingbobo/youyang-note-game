@@ -191,6 +191,8 @@ body.viewport-fit{height:var(--app-height,100dvh)!important;min-height:0!importa
 .viewport-fit #note-map .exercise-body,.viewport-fit #interval-map .exercise-body,.viewport-fit #chord-map .exercise-body{flex:1;min-height:0;padding:0;gap:12px}
 .viewport-fit #note-map .staff,.viewport-fit #interval-map .staff,.viewport-fit #chord-map .staff{height:100%!important;min-height:0;max-height:270px}
 .viewport-fit .response-panel{min-height:0;gap:6px}
+/* A keyboard and its explanation each retain their own vertical space. */
+.viewport-fit .response-panel>*{flex-shrink:0;min-width:0}
 .viewport-fit .reading-card{margin:2px 0}
 .viewport-fit #answers .piano,.viewport-fit #i-keyboard .interval-piano,.viewport-fit #c-keyboard .chord-piano{height:clamp(88px,16dvh,112px)!important}
 .viewport-fit #i-keyboard .white,.viewport-fit #c-keyboard .white{padding-top:0;padding-bottom:6px;gap:3px}
@@ -252,6 +254,14 @@ body.viewport-fit{height:var(--app-height,100dvh)!important;min-height:0!importa
 .viewport-fit[data-fit="2"][data-fit] .keyboard-help{display:none}
 .viewport-fit[data-fit="2"][data-fit] #answers .piano,.viewport-fit[data-fit="2"][data-fit] #i-keyboard .interval-piano,.viewport-fit[data-fit="2"][data-fit] #c-keyboard .chord-piano{height:88px!important}
 .viewport-fit[data-fit="2"][data-fit] .keyboard-scroll{padding-top:2px;padding-bottom:4px}
+.viewport-fit[data-fit="2"][data-fit] #c-relations{position:relative;display:grid;grid-template-columns:82px minmax(0,1fr);gap:4px;padding:3px 6px}
+.viewport-fit[data-fit="2"][data-fit] .chord-heading{grid-column:1;padding:0;margin:0}
+.viewport-fit[data-fit="2"][data-fit] .chord-identity,.viewport-fit[data-fit="2"][data-fit] .chord-bass{display:none}
+.viewport-fit[data-fit="2"][data-fit] .relation-details{grid-column:2;grid-row:1;margin:0;border:0}
+.viewport-fit[data-fit="2"][data-fit] .relation-details>summary{padding:12px 2px;font-size:12px}
+.viewport-fit:is([data-fit="2"],[data-fit="3"]) #c-keyboard{order:0}
+.viewport-fit:is([data-fit="2"],[data-fit="3"]) #c-audio-notice{order:1}
+.viewport-fit:is([data-fit="2"],[data-fit="3"]) #c-relations{order:2}
 /* Wide, shallow viewports retain a full-width reading card above two practice columns. */
 .viewport-fit[data-fit="3"][data-fit] .map-toolbar{position:fixed;top:2px;left:max(250px,calc((100vw - 1100px)/2 + 250px));right:max(112px,calc((100vw - 1100px)/2 + 112px));margin:0;z-index:21}
 .viewport-fit[data-fit="3"][data-fit] header .brand{max-width:230px;font-size:16px}
@@ -451,7 +461,8 @@ function updateSoundToggle(){
 }
 function setSoundEnabled(enabled){
   soundEnabled=Boolean(enabled);
-  if(!soundEnabled){stopAudio();['audio-notice','i-audio-notice','c-audio-notice'].forEach(id=>{const notice=document.getElementById(id);if(notice)notice.hidden=true})}
+  if(!soundEnabled)stopAudio();
+  ['audio-notice','i-audio-notice','c-audio-notice'].forEach(id=>{const notice=document.getElementById(id);if(notice)notice.hidden=true});
   try{window.localStorage.setItem(soundPreferenceKey,soundEnabled?'on':'off')}catch{}
   updateSoundToggle();
 }
@@ -462,8 +473,9 @@ function midiName(midi){return pitchName(['C','C♯','D','D♯','E','F','F♯','
 // Raise audibility consistently; reserve digital headroom when notes are stacked.
 const audioLevels={answer:.44,piano:.36,peakLimit:.9};
 const pianoHarmonics=[1,.32,.16,.08];
+const mutedSoundMessage='声音已关闭，点顶部“声音关”开启后，再点琴键或正确答案听音。';
 function withAudio(render,notice=()=>{}){
-  if(!soundEnabled){notice(false);return false}
+  if(!soundEnabled){notice('muted');return false}
   try{
     stopAudio();
     if(audio?.state==='closed')audio=undefined;
@@ -499,7 +511,7 @@ function pianoSound(midi,notice=()=>{}){
   return pianoVoicing([midi],notice);
 }
 function pianoVoicing(midis,notice=()=>{}){
-  if(!soundEnabled){notice(false);return false}
+  if(!soundEnabled){notice('muted');return false}
   if(!Array.isArray(midis)||!midis.length||midis.some(midi=>!Number.isInteger(midi)||midi<0||midi>127))return false;
   const pitches=[...new Set(midis)];
   return withAudio((context,now)=>{
@@ -530,7 +542,7 @@ function render(){stopAudio();noteAudioNotice(false);usedHint=false;attempted=fa
 const praises=['找到了','你辨认对了','看得很仔细','这一步答对了','判断准确','做得好'];let lastPraise=-1;function reading(answer){let i=Math.floor(Math.random()*(praises.length-1));if(i>=lastPraise)i++;if(i>=praises.length)i=0;lastPraise=i;return `${praises[i]}！请朗读：${answer}。`}
 function noteAudioNotice(failed){
   const e=$('audio-notice');e.hidden=!failed;
-  e.textContent=failed?'声音未开启或已暂停，请再点一次'+(activeStage()===2?'琴键':'正确答案')+'重听，并检查设备音量。':'';
+  e.textContent=failed==='muted'?mutedSoundMessage:failed?'声音未开启或已暂停，请再点一次'+(activeStage()===2?'琴键':'正确答案')+'重听，并检查设备音量。':'';
 }
 function answer(value){if(done)return;const n=notes[current],stage=activeStage(),ok=stage===0?(phase===0?value===(n.line?'line':'space'):value===n.pos):Number(value)===current;if(!ok){firstClean=false;if(!attempted){stats[current].wrong++;rememberDifficulty(practiceKey(),7,current,1);attempted=true;report()}setLearningFeedback('feedback','bad',stage===0?(phase===0?'再观察一下：线有没有穿过音符的中心？':'从下往上数；五条线之外，加线和加间要分别数。'):`再试一次，从这一组的${notes[0].name}向上一步一步找。`);staff(true);return}let response=stage===0?(phase===0?(n.line?'线上':'间里'):`${group<=3?'低音':'高音'}谱表${n.pos}`):`${n.name}（${n.sol}），${group<=3?'低音':'高音'}谱表${n.pos}`;if((mode===0&&phase===0)||(mode===3&&phase<3)){phase++;staff();choices();setLearningFeedback('feedback','good',reading(response));return}done=true;if(outcome(stats[current],firstClean,usedHint,practiceKey(),7,current))correct++;report();$('score').textContent=`第 ${index+1} / 10 题 · 独立答对 ${correct}`;setLearningFeedback('feedback','good',reading(response));staff(true,true);setReadingActions('',true);$('hint').disabled=true;if(stage!==2)sound(n.midi,noteAudioNotice);if(stage===2)document.querySelector(`[data-answer="${current}"]`).classList.add('mark')}
 function hint(){if(done)return;if(!usedHint)rememberDifficulty(practiceKey(),7,current,.5);usedHint=true;let stage=activeStage();staff(true);setLearningFeedback('feedback','hintline',stage===0?(phase===0?'看音符的中心：线穿过中心就是线，中心在两条线之间就是间。':'从最下面的第一线开始向上数，线与间分别计数。超出五线谱后，向外数下加或上加的位置。'):stage===1?`这一组的${notes[0].name}在${notes[0].pos}。向上每移动一格，依次是${notes.map(n=>n.name).join('、')}。`:`先找两个黑键：它们左边的白键是这一组的${notes[0].name}，再依次向右数到目标音。`);if(stage===2)document.querySelector('[data-answer="0"]').classList.add('mark')}
@@ -590,7 +602,7 @@ function updateKeyboardMarks(){
     if(found)b.querySelector('.key-number').textContent='✓'+(start&&end?'①②':start?'①':'②');
   });
 }
-function audioNotice(failed){const e=get('audio-notice');e.hidden=!failed;e.textContent=failed?'声音未开启或已暂停，请再点一次'+(currentTask()==='degree'?'正确答案':'琴键')+'重听，并检查设备音量。':''}
+function audioNotice(failed){const e=get('audio-notice');e.hidden=!failed;e.textContent=failed==='muted'?mutedSoundMessage:failed?'声音未开启或已暂停，请再点一次'+(currentTask()==='degree'?'正确答案':'琴键')+'重听，并检查设备音量。':''}
 
 function currentTask(){return level===3?(step===0?'degree':step===1?'start':'target'):level<=1?'degree':'target'}
 function controls(keepKeyboard=false){let task=currentTask();get('staff').removeAttribute('hidden');get('keyboard').hidden=level===0||(level===3&&step===0);get('step').textContent=level===3?['第1步 / 共3步 · 看谱认音程','第2步 / 共3步 · 找起点琴键','第3步 / 共3步 · 找目标琴键'][step]:'';if(task==='degree'){get('question').textContent=level===1?'标出的两个白键相隔几度？':'从①到②，这两个音相隔几度？';get('answers').innerHTML='<div class="choices">'+range().degrees.map(d=>`<button class="choice position-choice" data-idegree="${d}">${labels[d]}${d===1?'（同度）':''}</button>`).join('')+'</div>';drawStaff();if(level===1)keyboard(true)}else{get('answers').innerHTML='';get('question').textContent=task==='start'?'先在琴键上找到①起点音。':level===2?`从${pair.a.name}出发，${pair.degree===1?'重复这个音':direction()+labels[pair.degree]}，找到目标琴键。`:'现在在琴键上找到②目标音。';drawStaff(level===2);if(keepKeyboard)updateKeyboardMarks();else keyboard(false,level===2||(level===3&&step===2))}}
@@ -660,7 +672,7 @@ function keyboard(){
   }
   get('keyboard').innerHTML=s+blackKeyGuides(low,total)+'</div></div><p class="keyboard-help"><span class="scroll-help" hidden>左右滑动找琴键 · </span>任意顺序找齐三个白键，点键可听音。</p>';refreshKeyboardHints(get('keyboard'));
 }
-function audioNotice(failed){const e=get('audio-notice');if(e){e.hidden=!failed;e.textContent=failed?'声音未开启或已暂停，'+(step===0?'请再点一次正确答案重试':'请点“听和弦”或琴键重试')+'，并检查设备音量。':''}}
+function audioNotice(failed){const e=get('audio-notice');if(e){e.hidden=!failed;e.textContent=failed==='muted'?mutedSoundMessage:failed?'声音未开启或已暂停，'+(step===0?'请再点一次正确答案重试':'请点“听和弦”或琴键重试')+'，并检查设备音量。':''}}
 function updateKeyboardMarks(){get('keyboard').querySelectorAll('[data-ckey]').forEach(b=>{const midi=Number(b.dataset.ckey),selected=selectedKeys.has(midi),miss=midi===wrongKey;b.classList.toggle('mark',selected);b.classList.toggle('miss',miss);b.setAttribute('aria-pressed',String(selected));b.querySelector('.key-number').textContent=selected?'✓':miss?'×':''})}
 function setFeedback(kind,message,data={}){paintReadingCard('c-feedback',kind,message,data)}
 function keyProgress(){get('step').textContent=`第2步 / 共2步 · 找三个白键 · 已找到 ${selectedKeys.size} / 3`}
@@ -812,14 +824,26 @@ document.querySelectorAll('.practice-settings').forEach(d=>{d.addEventListener('
         if(overflow>1)readingOverflow.push({id:e.id||e.className,overflow});
       }
     }
-    const blocks=map?[...map.querySelectorAll('h2,.step,.reading-card,.staff,.response-panel')].filter(visible):[],collisions=[];
-    for(let i=0;i<blocks.length;i++)for(let j=i+1;j<blocks.length;j++){
+    const collisions=[],contentOverflow=[];
+    function checkOverlap(blocks){for(let i=0;i<blocks.length;i++)for(let j=i+1;j<blocks.length;j++){
       const a=blocks[i].getBoundingClientRect(),b=blocks[j].getBoundingClientRect();
       const width=Math.min(a.right,b.right)-Math.max(a.left,b.left),height=Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top);
       if(width>1&&height>1)collisions.push({first:blocks[i].id||blocks[i].className,second:blocks[j].id||blocks[j].className,height});
+    }}
+    checkOverlap(map?[...map.querySelectorAll('h2,.step,.reading-card,.staff,.response-panel')].filter(visible):[]);
+    for(const panel of map?[...map.querySelectorAll('.response-panel')].filter(visible):[]){
+      const r=panel.getBoundingClientRect(),parts=[...panel.querySelectorAll(':scope > div,:scope > p')].filter(visible);
+      checkOverlap(parts);
+      for(const part of parts){const b=part.getBoundingClientRect(),overflow=Math.max(r.top-b.top,b.bottom-r.bottom,-b.top,b.bottom-size.height,0);if(overflow>1)contentOverflow.push({id:part.id||part.className,overflow})}
+    }
+    // The piano may be wider for horizontal scrolling, but must never be clipped vertically.
+    for(const piano of map?[...map.querySelectorAll('.response-panel .piano,.response-panel .interval-piano')].filter(visible):[]){
+      const scroller=piano.closest('.keyboard-scroll');if(!scroller)continue;
+      const r=scroller.getBoundingClientRect(),b=piano.getBoundingClientRect(),overflow=Math.max(r.top-b.top,b.bottom-r.bottom,-b.top,b.bottom-size.height,0);
+      if(overflow>1)contentOverflow.push({id:piano.id||piano.className,overflow});
     }
     const documentOverflow=Math.max(root.scrollHeight,body.scrollHeight)-size.height;
-    return {viewport:size,mode:body.dataset.fit,fit:outside.length===0&&collisions.length===0&&readingOverflow.length===0&&missingControls.length===0&&documentOverflow<=1,documentOverflow:Math.max(0,documentOverflow),outside,collisions,readingOverflow,missingControls,boxes};
+    return {viewport:size,mode:body.dataset.fit,fit:outside.length===0&&collisions.length===0&&readingOverflow.length===0&&contentOverflow.length===0&&missingControls.length===0&&documentOverflow<=1,documentOverflow:Math.max(0,documentOverflow),outside,collisions,readingOverflow,contentOverflow,missingControls,boxes};
   }
   function apply(mode){
     body.dataset.fit=String(mode);
@@ -837,7 +861,7 @@ document.querySelectorAll('.practice-settings').forEach(d=>{d.addEventListener('
     let best=null;
     for(const mode of modes){
       apply(mode);const result=measure();
-      const overflow=Math.max(result.documentOverflow,...result.outside.map(r=>Math.max(-r.top,r.bottom-size.height,-r.left,r.right-size.width)),...result.collisions.map(r=>r.height),...result.readingOverflow.map(r=>r.overflow),result.missingControls.length?size.height:0,0);
+      const overflow=Math.max(result.documentOverflow,...result.outside.map(r=>Math.max(-r.top,r.bottom-size.height,-r.left,r.right-size.width)),...result.collisions.map(r=>r.height),...result.readingOverflow.map(r=>r.overflow),...result.contentOverflow.map(r=>r.overflow),result.missingControls.length?size.height:0,0);
       if(!best||overflow<best.overflow)best={mode,result,overflow};
       if(result.fit){last=result;window.youyangPositionPanels?.();return last}
     }

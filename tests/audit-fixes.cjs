@@ -5,6 +5,34 @@ const mapButtons=Array.from({length:3},(_,i)=>({...element(),dataset:{map:String
 for(const id of ['reading-actions','i-reading-actions','c-reading-actions'])doc.getElementById(id);
 const c={document:doc,window:{AudioContext,localStorage,...layout},setTimeout(fn,delay){const id=++timerId;timers.set(id,{fn,delay,due:clock+delay,cancelled:false,fired:false});return id},clearTimeout(id){if(timers.has(id))timers.get(id).cancelled=true}};vm.createContext(c);vm.runInContext(source,c);const run=s=>vm.runInContext(s,c);function advance(ms){const target=clock+ms;while(true){const t=[...timers.values()].filter(t=>!t.cancelled&&!t.fired&&t.due<=target).sort((a,b)=>a.due-b.due)[0];if(!t)break;clock=t.due;t.fired=true;t.fn()}clock=target}return {c,els,doc,mapButtons,timers,voices,voiceStarts,run,advance,preferences}}
 const {run,advance,els,doc,mapButtons,timers,voices,voiceStarts}=setup();const state=game=>run(game+'.state()');const sum=cs=>cs.reduce((n,c)=>n+c.right+c.guided+c.retried,0);
+// The reported E4/G4/B4 keys must still sound after the chord is complete.
+{
+ const env=setup();env.mapButtons[2].onclick();env.run('chordGame.start(4,0,2);chordGame.respond("answer","Em")');env.els['c-enter-keys'].onclick();
+ const tap=midi=>{const key=env.els['c-keyboard'].querySelectorAll('[data-ckey]').find(b=>Number(b.dataset.ckey)===midi);assert.ok(key);env.els['c-keyboard'].onclick({target:{closest:()=>key}})};
+ for(const midi of [71,64,67])tap(midi);
+ assert.equal(env.run('chordGame.state().finished'),true);
+ const before=env.voices.length;tap(71);tap(71);assert.equal(env.voices.length-before,8);
+ for(let i=0;i<8;i++)assert.ok(Math.abs(env.voices[before+i]-493.8833012561241*(i%4+1))<1e-8);
+ assert.equal(env.run('chordGame.state().selected.length'),3);
+ env.els['sound-toggle'].onclick();const muted=env.voices.length;tap(71);
+ assert.equal(env.voices.length,muted);assert.equal(env.els['c-audio-notice'].hidden,false);assert.ok(env.els['c-audio-notice'].textContent.includes('声音已关闭'));
+ env.els['sound-toggle'].onclick();assert.equal(env.els['c-audio-notice'].hidden,true);tap(71);assert.equal(env.voices.length,muted+4);
+ for(const prefix of ['', 'i-']){
+  const quiet=setup('off');
+  if(prefix===''){
+   quiet.run('mode=2;group=4;reset();current=0;render()');
+   const key=quiet.els.answers.querySelectorAll('[data-answer]').find(b=>b.dataset.answer==='0');
+   quiet.els.answers.onclick({target:{closest:()=>key}});
+  }else{
+   quiet.mapButtons[1].onclick();quiet.run('intervalGame.start(4,2,3,0)');
+   const key=quiet.els['i-keyboard'].querySelectorAll('[data-ikey]').find(b=>Number(b.dataset.ikey)===30);
+   quiet.els['i-keyboard'].onclick({target:{closest:()=>key}});
+  }
+  assert.equal(quiet.voices.length,0);assert.equal(quiet.els[prefix+'audio-notice'].hidden,false);
+  assert.ok(quiet.els[prefix+'audio-notice'].textContent.includes('声音已关闭'));
+ }
+ console.log('Reported B4 replay passed after chord completion; muted clicks explain how to enable sound across all three maps and retain scoring.');
+}
 // Layout APIs are simulated here; these are interaction checks, not a mobile browser test.
 function mobileEnvironment({phone=true,reduced=false,visible=false}={}){
  const changes=[],media={matches:phone,addEventListener(type,fn){changes.push(fn)}};
