@@ -88,14 +88,25 @@ for width,height in [(319,495),(360,640),(390,844),(972,494),(1366,768)]:
      symbol=play.xpath('.//*[@class="reading-symbol"]')[0]
      notes=play.xpath('.//*[@class="reading-notes"]')[0]
      assert current[symbol]['grid-row']=='2';assert current[notes]['grid-row']=='2'
-    if fixture['name']=='chord-symbol':
+    if fixture['map']=='chord-map' and fixture['nodes']['c-play']['attrs'].get('data-chord-stage')=='symbol':
+     choices=tree.get_element_by_id('c-answers').xpath('./div[@class="choices"]')[0]
+     assert current[choices]['gap']=='4px'
+     assert current[choices]['grid-template-columns']=='repeat(4,minmax(0,1fr))'
+     buttons=choices.xpath('./button')
+     assert len(buttons)==7
+     for button in buttons:
+      assert current[button]['min-height']=='36px'
+      assert current[button]['padding']=='4px 3px'
+      assert current[button]['font-size']=='14px'
+      assert prior[button]['min-height']=='44px'
+     assert current[exercise]['grid-template-rows']=='minmax(52px,1fr) auto'
+    if fixture['name'].startswith('chord-symbol'):
      assert get('reading-actions')['width']=='72px'
      assert get('reading-actions')['max-width']=='72px'
      assert current[card]['grid-template-columns']=='minmax(0,1fr) auto'
      assert get('enter-keys')['min-height']=='44px'
      assert get('enter-keys')['white-space']=='nowrap'
      assert get('enter-keys')['font-size']=='13px'
-     assert prior[tree.get_element_by_id('c-enter-keys')]['font-size']=='14px'
      full=play.xpath('.//*[@class="enter-label-full"]')[0]
      short=play.xpath('.//*[@class="enter-label-short"]')[0]
      assert current[full]['display']=='none'

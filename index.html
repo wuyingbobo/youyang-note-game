@@ -411,6 +411,8 @@ body.viewport-fit{height:var(--app-height,100dvh)!important;min-height:0!importa
 
 /* Chord-specific selectors also override its earlier phone key layout. */
 @media(max-width:480px){
+ .viewport-fit #chord-map #c-play[data-chord-stage="symbol"] #c-answers .choices{gap:4px}
+ .viewport-fit #chord-map #c-play[data-chord-stage="symbol"] #c-answers .choice{min-height:36px;padding:4px 3px;font-size:14px}
  .viewport-fit #chord-map #c-play[data-chord-stage="keys"] .exercise-body{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(52px,1fr) auto;gap:4px}
  .viewport-fit #chord-map #c-play[data-chord-stage="keys"] #c-staff{min-height:52px;max-height:190px}
  .viewport-fit #chord-map #c-play[data-chord-stage="keys"] .response-panel{grid-column:1;grid-row:2;align-self:stretch}
@@ -566,9 +568,15 @@ function midiName(midi){return pitchName(['C','C♯','D','D♯','E','F','F♯','
 const audioLevels={answer:.44,piano:.36,peakLimit:.9};
 const pianoHarmonics=[1,.32,.16,.08];
 const mutedSoundMessage='声音已关闭，点顶部“声音关”开启后，再点琴键或正确答案听音。';
+function prepareAudioSession(){
+  // Use the media playback route on supporting browsers, including iOS.
+  // Session configuration is optional; unsupported or restricted APIs must not block a note.
+  try{const session=window.navigator?.audioSession;if(session&&session.type!=='playback')session.type='playback'}catch{}
+}
 function withAudio(render,notice=()=>{}){
   if(!soundEnabled){notice('muted');return false}
   try{
+    prepareAudioSession();
     stopAudio();
     if(audio?.state==='closed')audio=undefined;
     audio??=new(window.AudioContext||window.webkitAudioContext)();
