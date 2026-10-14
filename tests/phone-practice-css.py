@@ -88,9 +88,21 @@ for width,height in [(319,495),(360,640),(390,844),(972,494),(1366,768)]:
      symbol=play.xpath('.//*[@class="reading-symbol"]')[0]
      notes=play.xpath('.//*[@class="reading-notes"]')[0]
      assert current[symbol]['grid-row']=='2';assert current[notes]['grid-row']=='2'
+    if fixture['name']=='chord-symbol':
+     assert get('reading-actions')['width']=='88px'
+     assert get('reading-actions')['max-width']=='88px'
+     assert current[card]['grid-template-columns']=='minmax(0,1fr) auto'
+     assert get('enter-keys')['min-height']=='44px'
+     assert get('enter-keys')['white-space']=='nowrap'
+     full=play.xpath('.//*[@class="enter-label-full"]')[0]
+     short=play.xpath('.//*[@class="enter-label-short"]')[0]
+     assert current[full]['display']=='none'
+     assert current[short]['display']=='inline'
+     assert short.text=='找琴键 →'
    else:
     for node in targets:
-     if node.get('class')!='hint-label-short':assert current[node]==prior[node],(width,node.get('id'),node.get('class'))
+     if node.get('class') not in ['hint-label-short','enter-label-short']:assert current[node]==prior[node],(width,node.get('id'),node.get('class'))
+     if node.get('class')=='enter-label-short':assert current[node]['display']=='none'
    for node in targets:
     if any(c in node.get('class','').split() for c in ['feedback-message','reading-symbol','reading-notes','reading-detail','reading-label','reading-solfege']):
      for prop in ['font-size','font-family','font-weight','line-height']:

@@ -492,7 +492,7 @@ const quietNote=setup('off');prepareNote(quietNote,4,2,0);tapNoteAnswer(quietNot
 assert.equal(quietNote.voices.length,0);assert.equal(quietNote.run('correct'),1);
 quietNote.els['sound-toggle'].onclick();tapNoteAnswer(quietNote,0);assert.equal(quietNote.voices.length,4);assert.equal(quietNote.run('correct'),1);
 assert.ok(html.includes('#answers .piano .black{pointer-events:auto}'));assert.ok(html.includes('#answers .piano .white{min-width:44px;'));
-assert.ok(!html.includes('点击下方按钮'));assert.ok(html.includes('读完后，点击“进入第二步 · 找琴键”。'));
+assert.ok(!html.includes('点击下方按钮'));assert.ok(!html.includes('读完后，点击“进入第二步 · 找琴键”。'));assert.ok(!html.includes('读完后，再点“下一题”。'));
 console.log('Passed '+noteKeyboardCases+' note-keyboard cases and '+noteKeyboardClicks+' pitched clicks across all five groups and both keyboard levels: wrong-key audio, replay, once-only scoring, mute, staff mapping and preserved key focus. Black-key hit interception is checked in source; actual browser hit testing remains unverified.');
 
 async function basicAudioRecoveryChecks(){

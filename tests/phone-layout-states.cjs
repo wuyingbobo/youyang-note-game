@@ -31,6 +31,11 @@ for(const group of [2,3,4,5,6]){
  interval.run(`intervalGame.respond('key',${pair.b.d})`);assert.equal(interval.els['i-next'].hidden,false);
  if(group===4)snapshot(interval,'interval-map','i-','interval-complete');steps+=3;
  const chord=harness.makeEnvironment();chord.mapButtons[2].onclick();chord.run(`chordGame.start(${group},0,2);chordGame.respond('answer','Em')`);
+ assert.equal(chord.run('chordGame.state().step'),0);
+ assert.equal(chord.els['c-enter-keys'].hidden,false);
+ assert.equal(chord.els['c-next'].hidden,true);
+ assert.ok(chord.els['c-feedback-content'].innerHTML.includes('E小三和弦 · 原位和弦'));
+ assert.ok(!/再点正确答案|读完后/.test(chord.els['c-feedback-content'].innerHTML));
  if(group===4)snapshot(chord,'chord-map','c-','chord-symbol');
  chord.els['c-enter-keys'].onclick();assert.equal(chord.els['c-next'].hidden,true);
  if(group===4)snapshot(chord,'chord-map','c-','chord-keys-entry');
@@ -38,6 +43,8 @@ for(const group of [2,3,4,5,6]){
  chord.run(`chordGame.respond('key',${tones[2]})`);
  if(group===4)snapshot(chord,'chord-map','c-','chord-partial');
  chord.run(`chordGame.respond('key',${tones[0]});chordGame.respond('key',${tones[1]})`);assert.equal(chord.els['c-next'].hidden,false);
+ assert.ok(!chord.els['c-feedback-content'].innerHTML.includes('reading-detail'));
+ assert.ok(chord.els['c-feedback-content'].innerHTML.includes('reading-notes'));
  if(group===4)snapshot(chord,'chord-map','c-','chord-complete');steps+=4;
 }
 if(process.argv[2])fs.writeFileSync(process.argv[2],JSON.stringify(fixtures));
