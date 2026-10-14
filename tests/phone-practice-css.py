@@ -89,16 +89,18 @@ for width,height in [(319,495),(360,640),(390,844),(972,494),(1366,768)]:
      notes=play.xpath('.//*[@class="reading-notes"]')[0]
      assert current[symbol]['grid-row']=='2';assert current[notes]['grid-row']=='2'
     if fixture['name']=='chord-symbol':
-     assert get('reading-actions')['width']=='88px'
-     assert get('reading-actions')['max-width']=='88px'
+     assert get('reading-actions')['width']=='72px'
+     assert get('reading-actions')['max-width']=='72px'
      assert current[card]['grid-template-columns']=='minmax(0,1fr) auto'
      assert get('enter-keys')['min-height']=='44px'
      assert get('enter-keys')['white-space']=='nowrap'
+     assert get('enter-keys')['font-size']=='13px'
+     assert prior[tree.get_element_by_id('c-enter-keys')]['font-size']=='14px'
      full=play.xpath('.//*[@class="enter-label-full"]')[0]
      short=play.xpath('.//*[@class="enter-label-short"]')[0]
      assert current[full]['display']=='none'
      assert current[short]['display']=='inline'
-     assert short.text=='找琴键 →'
+     assert short.text=='找琴键'
    else:
     for node in targets:
      if node.get('class') not in ['hint-label-short','enter-label-short']:assert current[node]==prior[node],(width,node.get('id'),node.get('class'))
