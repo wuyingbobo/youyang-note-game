@@ -12,6 +12,7 @@
 - 保留蓝白视觉、朗读字体和字号；根据可见屏幕高度调整留白和练习排列。
 - 音组按钮保留编号，在括号中补充乐理名称，例如“第4组（小字一组）· C4—B4”。题目、答案、谱面提示和朗读中的具体音名按传统乐理写法区分大小写与音组，例如 C、c、c¹、c²、c³；跨组音也使用实际音组标记。钢琴键盘标签保留 C2、C3、C4、C5、C6 这类大写字母加数字的写法，方便直观定位，两种标记对应同一个实际音高。现代和弦记号保留 C、Dm、C/E 等大写字母写法。
 - 练习区按浏览器当前可见高度分配空间；空间不足时收紧导航与留白，将继续按钮保留在朗读卡右侧，朗读字体和字号保持不变。手机和弦第二步使用独立的排列规则：朗读卡在练习区上方，竖屏乐谱在完整宽度的键盘上方，听和弦与音程说明独占一行；较宽或较矮的屏幕将乐谱放在键盘左侧。
+- 小屏手机的三个模块统一把乐谱放在答案或键盘上方；朗读卡用满练习区宽度并减少留白，键盘高度为76像素。“提示”显示为短按钮，完整功能名称保留在无障碍标签中。朗读字体和字号保留。
 - 紧凑布局中，学习记录入口位于顶部；和弦音程说明展开为浮层，避免把练习页面向下撑长。
 - 页面在题目变化、答题反馈、窗口缩放及手机地址栏高度变化后，重新测量内容并选择合适布局。页面不会用裁切内容来伪装成一屏。
 
@@ -31,6 +32,7 @@ node tests/viewport-fit.cjs
 node tests/panels.cjs
 node tests/audio-levels.cjs
 node tests/chord-layout-states.cjs /tmp/chord-layout-states.json
+node tests/phone-layout-states.cjs /tmp/phone-layout-states.json
 ```
 
 测试覆盖题目判定、任意顺序找琴键、音高映射、传统音名大小写与组别、跨组题目与朗读格式、现代和弦记号、音频恢复与取消、重复点击、声音开关，以及手机滚动和键盘溢出提示的状态逻辑。
@@ -43,6 +45,8 @@ node tests/chord-layout-states.cjs /tmp/chord-layout-states.json
 python -m pip install -r tests/css-test-requirements.txt
 git show 0c0037f3b2356481e98f356d067a8ff16d7d1fdf:index.html > /tmp/chord-before.html
 python tests/mobile-chord-css.py /tmp/chord-layout-states.json /tmp/chord-before.html
+git show c15be252878fa100e2bc2d4877aaad700489849e:index.html > /tmp/practice-before.html
+python tests/phone-practice-css.py /tmp/phone-layout-states.json /tmp/practice-before.html
 ```
 
 学习进度保存在当前页面内，刷新后会重新开始。

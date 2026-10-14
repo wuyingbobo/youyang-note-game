@@ -97,7 +97,7 @@ for width, height in sizes:
             assert get('c-play')['display'] == 'flex', (width, mode, fixture['name'])
             assert current[exercise]['display'] == 'grid'
             assert current[response]['display'] == 'grid', (width,height,mode,fixture['name'],current[response])
-            side = width > 480 or height <= 520
+            side = width > 480
             assert current[response]['grid-column'] == ('2' if side else '1')
             assert current[response]['grid-row'] == ('1' if side else '2')
             assert get('c-keyboard')['grid-row'] == '1'
@@ -109,7 +109,7 @@ for width, height in sizes:
             assert get('c-reading-actions')['width'] == '88px'
             assert get('c-answers')['display'] == 'none'
             piano = nodes.get_element_by_id('c-keyboard').xpath('./div/div')[0]
-            assert current[piano]['height'] == 'clamp(88px,14dvh,104px)'
+            assert current[piano]['height'] == ('76px' if width <= 480 else 'clamp(88px,14dvh,104px)')
             assert current[piano]['min-width'] == 'var(--keyboard-width)'
             scroller = piano.getparent()
             assert current[scroller]['overflow-x'] == 'auto'
@@ -126,18 +126,21 @@ for width, height in sizes:
                 classes = node.get('class', '').split()
                 if any(c in classes for c in ['feedback-message','reading-label','reading-symbol','reading-notes','reading-detail']):
                     assert current[node].get('font-size') == prior[node].get('font-size')
-                if any(ancestor.get('id') in ['note-map','interval-map'] for ancestor in node.iterancestors()):
-                    assert current[node] == prior[node], node.get('id')
+                if width > 480 and any(ancestor.get('id') in ['note-map','interval-map'] for ancestor in node.iterancestors()):
+                    if node.get('class') == 'hint-label-short':
+                        assert current[node]['display'] == 'none'
+                    else:
+                        assert current[node] == prior[node], node.get('id')
             cases += 1
 
 # Desktop and the first chord step must retain all existing declarations.
-for width, height in [(390,844),(619,494),(972,494),(1366,768)]:
+for width, height in [(619,494),(972,494),(1366,768)]:
     root = fixture_dom(fixtures[0], 0)
     if width <= 640:
         root.etree_element.get_element_by_id('c-play').set('data-chord-stage', 'symbol')
     current = styles(matcher(source,width,height), root)
     prior = styles(matcher(before,width,height), root)
     for node in root.etree_element.iter():
-        if node.get('class') != 'relation-identity':
+        if node.get('class') not in ['relation-identity','hint-label-short']:
             assert current[node] == prior[node], (width, node.get('id'), node.get('class'))
-print(f'Static CSS cascade passed {cases} generated-state/size/mode cases; keyboard rows, full widths, scroll declarations, close controls, reading fonts, desktop, first step and other-map scope checked. Pixel geometry, touch and audible output remain unverified.')
+print(f'Static CSS cascade passed {cases} generated-state/size/mode cases; keyboard rows, full widths, scroll declarations, close controls, reading fonts, desktop and first-step scope checked; phone maps intentionally share the compact practice layout. Pixel geometry, touch and audible output remain unverified.')

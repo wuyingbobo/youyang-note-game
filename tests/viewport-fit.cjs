@@ -2,7 +2,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
 const source=html.slice(html.indexOf('(function installViewportFit(){'),html.indexOf('</script>',html.indexOf('(function installViewportFit(){')));
 // These are supplied DOM rectangles, not screenshots or real browser layout results.
-function environment(width,height,{overflow={},collisionModes=[],negativeModes=[],autoOpen=false,userOpen=false,buttonOverflowModes=[],cardOverflowModes=[],hiddenButtonModes=[],responseOverlapModes=[],keyboardClipModes=[],auditResponse=false}={}){
+function environment(width,height,{overflow={},collisionModes=[],negativeModes=[],autoOpen=false,userOpen=false,buttonOverflowModes=[],cardOverflowModes=[],hiddenButtonModes=[],responseOverlapModes=[],keyboardClipModes=[],auditResponse=false,textOverflowModes=[]}={}){
  const frames=[],events={},visualEvents={},observers={},styles=new Map();let fontReady;
  const body={dataset:{fit:'0'},style:{setProperty(k,v){styles.set(k,v)}},getBoundingClientRect(){return box(0,0,width,height)}};
  const mode=()=>Number(body.dataset.fit),box=(left,top,w,h)=>({left,top,right:left+w,bottom:top+h,width:w,height:h});
@@ -17,8 +17,9 @@ function environment(width,height,{overflow={},collisionModes=[],negativeModes=[
  ];
  const next=element('next',m=>box(width-86,buttonOverflowModes.includes(m)?height-20:cardOverflowModes.includes(m)?308:m===3?232:242,80,44));
  const readingText=element('feedback-content',m=>box(8,232,width-100,m===3?44:60));
- const readingParts=[readingText,next];
- blocks[2].querySelectorAll=()=>readingParts;
+ const glyph=element('reading-symbol',m=>box(8,textOverflowModes.includes(m)?308:242,40,32));
+ const readingParts=selector=>[readingText,next,...(selector.includes('.reading-symbol')?[glyph]:[])];
+ blocks[2].querySelectorAll=readingParts;
  const panel=blocks[4];
  const within=(m,offset,h,w)=>{const r=panel.getBoundingClientRect();return box(r.left,r.top+offset,w??r.width,h)};
  const identity=element('c-relations',m=>within(m,6,responseOverlapModes.includes(m)?40:20));
@@ -33,7 +34,7 @@ function environment(width,height,{overflow={},collisionModes=[],negativeModes=[
   if(selector==='.reading-card')return [blocks[2]];
   if(selector==='.response-panel')return [panel];
   if(selector==='.response-panel .piano,.response-panel .interval-piano')return auditResponse?[piano]:[];
-  return selector.startsWith('h2,')?blocks:[...chrome,...blocks,...(selector.includes('.reading-content')?readingParts:[])];
+  return selector.startsWith('h2,')?blocks:[...chrome,...blocks,...(selector.includes('.reading-content')?readingParts(selector):[])];
  }};
  const details={open:autoOpen||userOpen,automatic:autoOpen,removeAttribute(name){assert.equal(name,'data-auto-open');this.automatic=false}};
  const root={get scrollHeight(){return height+(overflow[mode()]||0)}};
@@ -80,6 +81,8 @@ assert.equal(scrollableKeys.window.youyangViewportAudit().fit,true,'Horizontal k
 const buttonBelow=environment(390,640,{buttonOverflowModes:[0]});assert.equal(buttonBelow.body.dataset.fit,'1');assert.equal(buttonBelow.window.youyangViewportAudit().fit,true);
 const buttonOutsideCard=environment(390,640,{cardOverflowModes:[0]});assert.equal(buttonOutsideCard.body.dataset.fit,'1');assert.equal(buttonOutsideCard.window.youyangViewportAudit().fit,true);
 const invisibleButton=environment(390,640,{hiddenButtonModes:[0]});assert.equal(invisibleButton.body.dataset.fit,'1');assert.equal(invisibleButton.window.youyangViewportAudit().fit,true);
+const textBeyondCard=environment(319,495,{textOverflowModes:[0]});assert.equal(textBeyondCard.body.dataset.fit,'1');assert.equal(textBeyondCard.window.youyangViewportAudit().fit,true);
+const textBeyondEveryCard=environment(319,495,{textOverflowModes:[0,1,2]});assert.equal(textBeyondEveryCard.window.youyangViewportAudit().fit,false);assert.ok(textBeyondEveryCard.window.youyangViewportAudit().readingOverflow.some(r=>r.id==='reading-symbol'));
 const noVisibleContinuation=environment(390,640,{hiddenButtonModes:[0,1,2]});assert.equal(noVisibleContinuation.window.youyangViewportAudit().fit,false);assert.deepEqual(Array.from(noVisibleContinuation.window.youyangViewportAudit().missingControls),['next']);
 const recordRoom={0:100},stableRecord=environment(390,640,{overflow:recordRoom});
 assert.equal(stableRecord.body.dataset.fit,'1');delete recordRoom[0];stableRecord.report.open=true;
