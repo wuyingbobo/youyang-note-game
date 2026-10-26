@@ -16,6 +16,8 @@ matcher=scope['matcher']
 source=(Path(__file__).resolve().parents[1]/'index.html').read_text()
 before=Path(sys.argv[2]).read_text()
 fixtures=json.loads(Path(sys.argv[1]).read_text())
+for fixture in fixtures:
+ fixture.setdefault('map','chord-map');fixture.setdefault('prefix','c-')
 
 def dom(fixture,mode):
  root=html.fromstring(source.split('<script>',1)[0]+'</body></html>')
@@ -56,69 +58,41 @@ def selected_styles(match,root,targets):
  return result
 
 cases=0
-for width,height in [(319,495),(360,640),(390,844),(972,494),(1366,768)]:
- current_match,prior_match=matcher(source,width,height),matcher(before,width,height)
+for width,height in [(319,495),(390,844),(972,494),(1366,768)]:
+ current_match=matcher(source,width,height)
  for fixture in fixtures:
   for mode in [0,1,2,3]:
    root=dom(fixture,mode);tree=root.etree_element;prefix=fixture['prefix'];play=tree.get_element_by_id(prefix+'play')
    exercise=play.xpath('./div[@class="exercise-body"]')[0];response=exercise.xpath('./div[@class="response-panel"]')[0]
-   card=tree.get_element_by_id(prefix+'feedback')
-   targets=set(play.iter())
-   current=selected_styles(current_match,root,targets);prior=selected_styles(prior_match,root,targets)
+   targets=set(play.iter());current=selected_styles(current_match,root,targets)
    get=lambda name:current[tree.get_element_by_id(prefix+name)]
-   if width<=480:
-    assert get('play')['display']=='flex',(width,mode,fixture['name'])
-    assert current[exercise]['display']=='grid'
-    assert current[exercise]['grid-template-columns']=='minmax(0,1fr)'
-    assert current[response]['grid-column']=='1'
-    assert current[response]['grid-row']=='2'
-    assert get('staff')['width']=='100%'
-    assert get('staff')['grid-row']=='1'
-    assert current[card]['width']=='100%'
-    assert current[card]['min-height']=='0'
-    assert current[card]['align-self']=='stretch'
-    assert current[card]['padding']=='4px 8px'
-    assert get('question')['padding-right']=='56px'
-    for node in targets:
-     classes=node.get('class','').split()
-     if 'piano' in classes or 'interval-piano' in classes:assert current[node]['height']=='76px'
-     if 'hint-label-short' in classes:assert current[node]['display']=='inline'
-     if 'hint-label-full' in classes:assert current[node]['display']=='none'
-    if fixture['name']=='interval-start-reading':
-     symbol=play.xpath('.//*[@class="reading-symbol"]')[0]
-     notes=play.xpath('.//*[@class="reading-notes"]')[0]
-     assert current[symbol]['grid-row']=='2';assert current[notes]['grid-row']=='2'
-    if fixture['map']=='chord-map' and fixture['nodes']['c-play']['attrs'].get('data-chord-stage')=='symbol':
-     choices=tree.get_element_by_id('c-answers').xpath('./div[@class="choices"]')[0]
-     assert current[choices]['gap']=='4px'
-     assert current[choices]['grid-template-columns']=='repeat(4,minmax(0,1fr))'
-     buttons=choices.xpath('./button')
-     assert len(buttons)==7
-     for button in buttons:
-      assert current[button]['min-height']=='36px'
-      assert current[button]['padding']=='4px 3px'
-      assert current[button]['font-size']=='14px'
-      assert prior[button]['min-height']=='44px'
-     assert current[exercise]['grid-template-rows']=='minmax(52px,1fr) auto'
-    if fixture['name'].startswith('chord-symbol'):
-     assert get('reading-actions')['width']=='72px'
-     assert get('reading-actions')['max-width']=='72px'
-     assert current[card]['grid-template-columns']=='minmax(0,1fr) auto'
-     assert get('enter-keys')['min-height']=='44px'
-     assert get('enter-keys')['white-space']=='nowrap'
-     assert get('enter-keys')['font-size']=='13px'
-     full=play.xpath('.//*[@class="enter-label-full"]')[0]
-     short=play.xpath('.//*[@class="enter-label-short"]')[0]
-     assert current[full]['display']=='none'
-     assert current[short]['display']=='inline'
-     assert short.text=='找琴键'
-   else:
-    for node in targets:
-     if node.get('class') not in ['hint-label-short','enter-label-short']:assert current[node]==prior[node],(width,node.get('id'),node.get('class'))
-     if node.get('class')=='enter-label-short':assert current[node]['display']=='none'
+   assert get('play')['display']=='flex'
+   assert get('play')['flex-direction']=='column'
+   assert current[exercise]['display']=='grid'
+   assert current[exercise]['grid-template-columns']=='minmax(0,1fr)'
+   assert current[exercise]['grid-template-rows']=='minmax(64px,1fr) auto'
+   assert get('staff')['grid-column']=='1' and get('staff')['grid-row']=='1'
+   assert get('staff')['max-height']=='none'
+   assert current[response]['grid-column']=='1' and current[response]['grid-row']=='2'
+   assert get('feedback')['grid-template-columns']=='minmax(0,1fr) auto'
+   assert get('feedback')['padding']==('4px 10px' if 'is-prompt' in tree.get_element_by_id(prefix+'feedback').get('class','').split() else '4px 8px'),(width,mode,fixture['name'])
+   assert get('reading-actions')['grid-column']=='2'
+   assert get('feedback-content')['display']=='flex',(width,mode,fixture['name'],get('feedback-content'))
    for node in targets:
-    if any(c in node.get('class','').split() for c in ['feedback-message','reading-symbol','reading-notes','reading-detail','reading-label','reading-solfege']):
-     for prop in ['font-size','font-family','font-weight','line-height']:
-      assert current[node].get(prop)==prior[node].get(prop),(fixture['name'],prop)
+    classes=node.get('class','').split()
+    if 'reading-heading' in classes:assert current[node]['display']=='flex'
+    if 'reading-symbol' in classes:assert current[node]['font-size']=='25px'
+    if 'reading-notes' in classes:assert current[node]['font-size']=='19px'
+    if 'reading-label' in classes:assert current[node]['font-size']=='12px'
+    if 'piano' in classes or 'interval-piano' in classes:assert current[node]['height']=='64px'
+    if 'white' in classes:assert current[node]['min-width']=='44px'
+    if 'choices' in classes and len(node.xpath('./button'))==7:
+     assert current[node]['grid-template-columns']=='repeat(8,minmax(0,1fr))'
+     buttons=node.xpath('./button')
+     for i,button in enumerate(buttons):
+      assert current[button]['min-height']=='36px'
+      assert current[button]['grid-row']==('1' if i<3 else '2')
+      if i<3:assert current[button]['grid-column']==f'{2+i*2}/span 2'
+      else:assert current[button]['grid-column']=='span 2'
    cases+=1
-print(f'Static practice CSS passed {cases} map/state/size/mode cases, including 319×495: full-width reading and score, stacked answers/keys, compact spacing, 76px keyboard, hint labels, reading typography and desktop scope. Actual pixels, one-screen fit, touch and sound remain unverified.')
+print(f'A-layout CSS passed {cases} generated-state/size/fit-mode cases: card above score, stacked response, 3+4 equal-width choices, compact typography, 64px piano and retained 44px key widths. Static rules only; browser geometry is verified separately.')

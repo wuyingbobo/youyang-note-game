@@ -50,3 +50,10 @@ python tests/phone-practice-css.py /tmp/phone-layout-states.json /tmp/practice-b
 ```
 
 学习进度保存在当前页面内，刷新后会重新开始。
+
+
+## 2026-10-26 · A 版布局
+
+采用用户确认的蓝白版式：朗读卡固定在谱面上方，电脑/手机均上下排列，七个答案上三下四等宽居中，琴键高度64px且保留44px最小宽度。顶部采用短标签并保留完整可访问名称。
+
+验收范围与限制见 [A版验收记录](tests/qa-a-layout-20261026.md)。CSS规则检查使用 `tests/phone-practice-css.py`；`tests/mobile-chord-css.py` 在A版上转交同一检查器。真实设备触摸和扬声器听感尚未验证。
