@@ -46,6 +46,28 @@ body::before{content:"";position:fixed;bottom:0;left:0;right:0;height:45px;z-ind
 .bottom{gap:10px}.tile{background:#e2f2ff;border:2px solid white;padding:12px 16px;border-radius:17px;min-height:79px;font-size:14px}.tile:nth-child(2){background:#fff3d0}.tile:nth-child(3){background:#e0f7e9}.tile strong{font-size:16px}
 @media(max-height:780px){.top{height:62px}.shell{padding:7px 1.5%;gap:6px}.question{min-height:155px}.coach{min-height:130px}.coach .face svg{height:73px}.coach p{font-size:12px;padding:3px}.slot{height:42px;width:43px}.center h2{font-size:32px}.feedback{min-height:27px;margin-top:3px;padding:3px}.btn{min-height:37px}.btn.primary{min-height:42px}.key{height:clamp(40px,8.4vh,64px)}.tile{min-height:55px;padding:6px}.keyboard{gap:5px}.keyrow{gap:5px}}
 @media(max-width:1050px){.question{grid-template-columns:16% 1fr 23%}.coach .face svg{height:100px}.coach{min-height:155px}.actions .btn{font-size:13px}}
+
+/* 儿童明媚配色及键位提示可读性升级 */
+body{background:linear-gradient(180deg,#84d7ff 0%,#c7f1ff 57%,#93e78c 100%)!important}
+.top{background:linear-gradient(100deg,#a7e6ff,#e2f8ff 50%,#a1dfff)!important;border-bottom:2px solid #7dcef0}
+.brand h1{color:#0875d8!important}.status>div{background:#fffffff0}
+.question{background:#fff!important;box-shadow:0 8px 25px #268fc041!important}
+.coach{background:linear-gradient(145deg,#cbffea,#9cebc7,#c4f3ff)!important;border:2px solid #82d9ad!important}
+.coach p{border-color:#69bff5!important;background:white!important;font-size:clamp(14px,1.25vw,19px)!important}
+.btn.hint{background:linear-gradient(#fff09e,#ffd15f)!important;color:#795000!important}
+.btn.primary{background:linear-gradient(#54bcff,#007cf1)!important;box-shadow:0 4px 0 #0066c4!important}
+.keyboardPanel{background:linear-gradient(160deg,#cbecff,#d7f2ff)!important;box-shadow:0 7px 24px #238fc030!important}
+.key{background:linear-gradient(#fff,#f4faff)!important;border-color:#b4d4e8!important;border-bottom-color:#a0bdd4!important}
+.key b{font-size:clamp(22px,2.1vw,30px)!important}
+.key small{font-size:clamp(14px,1.33vw,19px)!important;color:#c92861!important;font-weight:800!important;line-height:1.2!important;white-space:normal;text-align:center;letter-spacing:.1px}
+.key{height:clamp(73px,9.8vh,100px)!important;gap:4px!important}
+.key.wide,.key.space{background:linear-gradient(#e9f4ff,#cfdff0)!important}
+.key.target{background:#ffe285!important;border-color:#d99e22!important}.key.correct{background:#9bedb7!important;border-color:#2eb776!important}.key.incorrect{background:#ffc4bd!important;border-color:#e86868!important}
+.tile:nth-child(1){background:#c7eaff!important}.tile:nth-child(2){background:#ffebb0!important}.tile:nth-child(3){background:#bbf1d2!important}
+.tile{color:#163b6a!important}.tile strong{font-size:clamp(16px,1.3vw,20px)!important}
+.mode button.selected{background:#127fe8!important;color:#fff!important}
+@media(max-height:800px){.key{height:clamp(50px,8.6vh,70px)!important}.key small{font-size:clamp(12px,1.05vw,16px)!important}.key b{font-size:clamp(17px,1.8vw,24px)!important}}
+@media(max-width:1080px){.key small{font-size:clamp(11px,1.1vw,14px)!important}}
 </style></head>
 <body><header class="top"><div class="brand"><span class="panda">🐼</span><div><h1>双拼闯关训练营</h1><div class="muted">双拼打字启蒙训练 · 小鹤双拼</div></div></div><div class="status"><div><strong>⭐ <span id="score">0</span></strong></div><div><strong id="progressLabel">第1题 / 共10题</strong><div class="progress"><div id="progressBar"></div></div></div><div><strong id="levelTitle">第1关｜键位入门</strong></div></div></header>
 <main class="shell"><section class="question"><div class="coach"><div class="face"><svg viewBox="0 0 170 150" width="100%" height="130" xmlns="http://www.w3.org/2000/svg" aria-label="熊猫教练"><ellipse cx="85" cy="135" rx="68" ry="11" fill="#90cfb1" opacity=".35"/><circle cx="42" cy="34" r="23" fill="#222d3c"/><circle cx="127" cy="34" r="23" fill="#222d3c"/><ellipse cx="85" cy="78" rx="65" ry="63" fill="#fff" stroke="#dce7f0" stroke-width="2"/><ellipse cx="57" cy="73" rx="19" ry="24" fill="#242e3e" transform="rotate(17 57 73)"/><ellipse cx="114" cy="73" rx="19" ry="24" fill="#242e3e" transform="rotate(-17 114 73)"/><ellipse cx="63" cy="69" rx="7" ry="9" fill="#fff"/><ellipse cx="109" cy="69" rx="7" ry="9" fill="#fff"/><circle cx="64" cy="69" r="3" fill="#212d43"/><circle cx="110" cy="69" r="3" fill="#212d43"/><ellipse cx="37" cy="100" rx="13" ry="7" fill="#ffb8bf" opacity=".7"/><ellipse cx="133" cy="100" rx="13" ry="7" fill="#ffb8bf" opacity=".7"/><ellipse cx="86" cy="93" rx="12" ry="8" fill="#273241"/><path d="M74 107 Q86 126 99 107" fill="#e95d80" stroke="#273241" stroke-width="4" stroke-linecap="round"/><ellipse cx="131" cy="128" rx="20" ry="11" fill="#273241"/><circle cx="144" cy="113" r="14" fill="#273241"/><circle cx="151" cy="105" r="4" fill="#ffb7c2"/><circle cx="140" cy="102" r="4" fill="#ffb7c2"/></svg></div><strong>熊猫教练</strong><p id="coach">先想一想，再按键！</p></div><div class="center"><div class="muted" id="stage">键位入门 · 观察与练习</div><h2 id="question">ai 对应哪个键？</h2><div id="answer" class="answer" aria-live="polite"></div><div class="muted">请按实体键盘答题，完成后按空格键进入下一题</div><div id="feedback" class="feedback" role="status">找到正确按键，试着按下来！</div></div><div class="actions"><button class="btn hint" id="hint">💡 提示</button><button class="btn" id="retry">↺ 重试</button><button class="btn primary" id="next" disabled>下一题（空格键） →</button><div class="notice" style="grid-column:span 2;text-align:center">完成答题后，空格键才会生效</div></div></section>
