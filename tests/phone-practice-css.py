@@ -69,30 +69,29 @@ for width,height in [(319,495),(390,844),(972,494),(1366,768)]:
    assert get('play')['display']=='flex'
    assert get('play')['flex-direction']=='column'
    assert current[exercise]['display']=='grid'
-   assert current[exercise]['grid-template-columns']=='minmax(0,1fr)'
-   assert current[exercise]['grid-template-rows']=='minmax(64px,1fr) auto'
+   assert current[exercise]['grid-template-columns']==('minmax(0,1.3fr) minmax(0,.9fr)' if width>760 else 'minmax(0,1fr)')
+   assert current[exercise]['grid-template-rows']==('minmax(100px,1fr)' if width>760 else 'minmax(64px,1fr) auto')
    assert get('staff')['grid-column']=='1' and get('staff')['grid-row']=='1'
    assert get('staff')['max-height']=='none'
-   assert current[response]['grid-column']=='1' and current[response]['grid-row']=='2'
+   assert current[response]['grid-column']==('2' if width>760 else '1') and current[response]['grid-row']==('1' if width>760 else '2')
    assert get('feedback')['grid-template-columns']=='minmax(0,1fr) auto'
-   assert get('feedback')['padding']==('4px 10px' if 'is-prompt' in tree.get_element_by_id(prefix+'feedback').get('class','').split() else '4px 8px'),(width,mode,fixture['name'])
+   assert get('feedback')['padding']==('4px 8px' if 'is-prompt' in tree.get_element_by_id(prefix+'feedback').get('class','').split() else '4px 6px' if height<=560 else '7px 10px' if width>760 else '6px 8px'),(width,mode,fixture['name'])
    assert get('reading-actions')['grid-column']=='2'
-   assert get('feedback-content')['display']=='flex',(width,mode,fixture['name'],get('feedback-content'))
+   assert get('feedback-content')['display']==('grid' if tree.get_element_by_id(prefix+'feedback-content').xpath('.//*[contains(@class,"reading-line")]') else 'flex'),(width,mode,fixture['name'],get('feedback-content'))
    for node in targets:
     classes=node.get('class','').split()
     if 'reading-heading' in classes:assert current[node]['display']=='flex'
-    if 'reading-symbol' in classes:assert current[node]['font-size']=='25px'
-    if 'reading-notes' in classes:assert current[node]['font-size']=='19px'
-    if 'reading-label' in classes:assert current[node]['font-size']=='12px'
+    if 'reading-symbol' in classes:assert current[node]['font-size']==('25px' if width<=360 else '28px' if width<=760 else '38px')
+    if 'reading-notes' in classes:assert current[node]['font-size']==('16px' if width<=360 else '18px' if width<=760 else '21px')
+    if 'reading-label' in classes:assert current[node]['font-size']==('10px' if width<=360 else '12px')
     if 'piano' in classes or 'interval-piano' in classes:assert current[node]['height']=='64px'
     if 'white' in classes:assert current[node]['min-width']=='44px'
     if 'choices' in classes and len(node.xpath('./button'))==7:
-     assert current[node]['grid-template-columns']=='repeat(8,minmax(0,1fr))'
+     assert current[node]['grid-template-columns']=='repeat(4,minmax(0,1fr))'
      buttons=node.xpath('./button')
      for i,button in enumerate(buttons):
-      assert current[button]['min-height']=='36px'
-      assert current[button]['grid-row']==('1' if i<3 else '2')
-      if i<3:assert current[button]['grid-column']==f'{2+i*2}/span 2'
-      else:assert current[button]['grid-column']=='span 2'
+      assert current[button]['min-height']==('34px' if height<=560 else '54px' if width>760 else '40px')
+      assert current[button]['grid-row']=='auto'
+      assert current[button]['grid-column']=='auto'
    cases+=1
-print(f'A-layout CSS passed {cases} generated-state/size/fit-mode cases: card above score, stacked response, 3+4 equal-width choices, compact typography, 64px piano and retained 44px key widths. Static rules only; browser geometry is verified separately.')
+print(f'A-layout CSS passed {cases} generated-state/size/fit-mode cases: card above score, phone stacked / desktop split response, 4+3 equal-width choices, compact typography, 64px piano and retained 44px key widths. Static rules only; browser geometry is verified separately.')
