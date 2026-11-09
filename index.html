@@ -800,7 +800,24 @@ function trackVoice(o,g){activeVoices.add(o);o.onended=()=>{activeVoices.delete(
 function midiFrequency(midi){return 440*Math.pow(2,(midi-69)/12)}
 function midiName(midi){return pitchName(['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'][((midi%12)+12)%12],Math.floor(midi/12)-1)}
 // Raise audibility consistently; reserve digital headroom when notes are stacked.
-const audioLevels={answer:.44,piano:.36,peakLimit:.9};
+const audioLevels={answer:.44,piano:.36,peakLimit:.9,outputBoost:1.65};
+const audioOutputs=new WeakMap();
+function audioOutput(context){
+  if(audioOutputs.has(context))return audioOutputs.get(context);
+  // Raise all three maps equally. Keep normal signals linear; soften only strong peaks.
+  // The final curve stays below full scale, including simultaneous chord notes.
+  if(typeof context.createWaveShaper!=='function')return context.destination;
+  const boost=context.createGain(),limiter=context.createWaveShaper();
+  boost.gain.value=audioLevels.outputBoost;
+  const curve=new Float32Array(8193);
+  for(let i=0;i<curve.length;i++){
+    const x=i*2/(curve.length-1)-1,a=Math.abs(x);
+    curve[i]=Math.sign(x)*(a<=.7?a:.7+.28*Math.tanh((a-.7)/.28));
+  }
+  limiter.curve=curve;limiter.oversample='4x';
+  boost.connect(limiter);limiter.connect(context.destination);
+  audioOutputs.set(context,boost);return boost;
+}
 const pianoHarmonics=[1,.32,.16,.08];
 const mutedSoundMessage='声音已关闭，点顶部“声音关”开启。';
 function prepareAudioSession(){
@@ -834,7 +851,7 @@ function triangleVoice(context,midi,now){
   g.gain.setValueAtTime(.001,now);
   g.gain.exponentialRampToValueAtTime(audioLevels.answer,now+.02);
   g.gain.exponentialRampToValueAtTime(.001,now+.8);
-  o.connect(g);g.connect(context.destination);trackVoice(o,g);o.start(now);o.stop(now+.85);
+  o.connect(g);g.connect(audioOutput(context));trackVoice(o,g);o.start(now);o.stop(now+.85);
 }
 function sound(midi,notice=()=>{}){
   return withAudio((context,now)=>triangleVoice(context,midi,now),notice);
@@ -861,7 +878,7 @@ function pianoVoicing(midis,notice=()=>{}){
           g.gain.setValueAtTime(.0001,now);
           g.gain.exponentialRampToValueAtTime(level*amplitude,now+.008);
           g.gain.exponentialRampToValueAtTime(.0001,now+1.3/(1+i*.45));
-          o.connect(g);g.connect(context.destination);trackVoice(o,g);o.start(now);o.stop(now+1.4);
+          o.connect(g);g.connect(audioOutput(context));trackVoice(o,g);o.start(now);o.stop(now+1.4);
         });
       });
   },notice);
