@@ -84,7 +84,7 @@ for width,height in [(319,495),(390,844),(972,494),(1366,768)]:
     if 'reading-symbol' in classes:assert current[node]['font-size']==('25px' if width<=360 else '28px' if width<=760 else '38px')
     if 'reading-notes' in classes:assert current[node]['font-size']==('16px' if width<=360 else '18px' if width<=760 else '21px')
     if 'reading-label' in classes:assert current[node]['font-size']==('10px' if width<=360 else '12px')
-    if 'piano' in classes or 'interval-piano' in classes:assert current[node]['height']=='64px'
+    if 'piano' in classes or 'interval-piano' in classes:assert current[node]['height']==('clamp(64px,12dvh,96px)' if width<=760 else '64px')
     if 'white' in classes:assert current[node]['min-width']=='44px'
     if 'choices' in classes and len(node.xpath('./button'))==7:
      assert current[node]['grid-template-columns']=='repeat(4,minmax(0,1fr))'
@@ -94,4 +94,4 @@ for width,height in [(319,495),(390,844),(972,494),(1366,768)]:
       assert current[button]['grid-row']=='auto'
       assert current[button]['grid-column']=='auto'
    cases+=1
-print(f'A-layout CSS passed {cases} generated-state/size/fit-mode cases: card above score, phone stacked / desktop split response, 4+3 equal-width choices, compact typography, 64px piano and retained 44px key widths. Static rules only; browser geometry is verified separately.')
+print(f'A-layout CSS passed {cases} generated-state/size/fit-mode cases: card above score, phone stacked / desktop split response, 4+3 equal-width choices, compact typography, adaptive 64-96px phone piano and retained 44px key widths. Static rules only; browser geometry is verified separately.')

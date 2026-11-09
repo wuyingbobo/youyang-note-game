@@ -10,3 +10,8 @@ All passed: audit-fixes.cjs, audio-session.cjs, audio-levels.cjs, panels.cjs, vi
 
 ## Limits
 Responsive browser viewports are not physical phones. Physical touch drag, iOS/Android browser behavior, speaker/headphone audibility and timbre have not been verified. Audio program tests validate note frequencies, triggering and mute/recovery, not acoustic output. Keyboard horizontal overflow exists; a physical swipe has not been tested. No claim of universal one-screen fit at every possible size or enlarged accessibility font.
+
+## Mobile staff follow-up
+Staff SVGs align to the top of the existing score region on widths up to 760px, instead of vertically centering their music in unused white space. Desktop retains centered SVG placement. Phone piano heights use clamp(64px,12dvh,96px): 84px at 390x700, 96px at 390x844, 64px at 319x495. Staff coordinates and MIDI logic are unchanged.
+
+Actual Chromium: 12 observations: note-key (four sizes), interval-key (three sizes), completed chord (four sizes), bass-clef chord (390x700). Document overflow zero, principal controls in viewport, and all inspected SVG noteheads/labels/clefs inside staff bounds. Reverse-order chord completion and next button clicked. Viewport regression includes explicit mobile/desktop SVG alignment assertions; static CSS fixtures updated and passed. Physical-device touch and acoustic output remain unverified.

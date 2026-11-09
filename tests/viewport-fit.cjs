@@ -6,7 +6,7 @@ function environment(width,height,{overflow={},collisionModes=[],negativeModes=[
  const frames=[],events={},visualEvents={},observers={},styles=new Map();let fontReady;
  const body={dataset:{fit:'0'},style:{setProperty(k,v){styles.set(k,v)}},getBoundingClientRect(){return box(0,0,width,height)}};
  const mode=()=>Number(body.dataset.fit),box=(left,top,w,h)=>({left,top,right:left+w,bottom:top+h,width:w,height:h});
- function element(id,rect){return {id,className:id,getBoundingClientRect(){return rect(mode())}}}
+ function element(id,rect){return {id,className:id,attrs:{},setAttribute(k,v){this.attrs[k]=v},getBoundingClientRect(){return rect(mode())}}}
  const header=element('header',()=>box(0,0,width,44)),toolbar=element('map-toolbar',()=>box(0,44,width,44));
  const blocks=[
   element('question',m=>box(0,negativeModes.includes(m)?-5:156,width,40)),
@@ -41,6 +41,7 @@ function environment(width,height,{overflow={},collisionModes=[],negativeModes=[
  Object.defineProperty(body,'scrollHeight',{get(){return root.scrollHeight}});
  const report={open:false};
  const document={body,documentElement:root,fonts:{ready:{then(fn){fontReady=fn}}},querySelector(selector){return selector.startsWith('main>')?map:selector==='.report[open]'?(report.open?report:null):{}},querySelectorAll(selector){
+  if(selector==='svg.staff')return [blocks[3]];
   if(selector==='header,.map-toolbar')return [header,toolbar];
   if(selector==='.relation-details[open][data-auto-open]')return details.open&&details.automatic?[details]:[];
   return [...chrome,...blocks,header];
@@ -49,12 +50,12 @@ function environment(width,height,{overflow={},collisionModes=[],negativeModes=[
  class ResizeObserver{constructor(fn){observers.resize=fn}observe(){}}
  const window={innerWidth:width,innerHeight:height,visualViewport:{width,height,addEventListener(name,fn){visualEvents[name]=fn}},requestAnimationFrame(fn){frames.push(fn)},addEventListener(name,fn){events[name]=fn},getComputedStyle(e){return {display:'block',visibility:e===next&&hiddenButtonModes.includes(mode())?'hidden':'visible'}},MutationObserver,ResizeObserver};
  vm.runInNewContext(source,{document,window});
- return {window,body,styles,frames,events,visualEvents,observers,details,report,flush(){let n=0;while(frames.length){assert.ok(++n<10);frames.shift()()}},fontReady};
+ return {window,body,staff:blocks[3],styles,frames,events,visualEvents,observers,details,report,flush(){let n=0;while(frames.length){assert.ok(++n<10);frames.shift()()}},fontReady};
 }
 let cases=0;
 for(const [width,height] of [[320,568],[360,640],[390,844],[412,915],[667,375],[844,390],[972,494],[1366,768],[1440,900]]){
  // Wide shallow rectangles need the third layout; larger heights keep the first.
- const env=environment(width,height);assert.equal(env.window.youyangViewportAudit().fit,true);assert.equal(env.body.dataset.fit,height<430?'3':'0');cases++;
+ const env=environment(width,height);assert.equal(env.window.youyangViewportAudit().fit,true);assert.equal(env.body.dataset.fit,height<430?'3':'0');assert.equal(env.staff.attrs.preserveAspectRatio,width<=760?'xMidYMin':'xMidYMid');cases++;
 }
 const compact=environment(390,640,{overflow:{0:100},autoOpen:true});
 assert.equal(compact.body.dataset.fit,'1');assert.equal(compact.window.youyangViewportAudit().fit,true);assert.equal(compact.details.open,false);
