@@ -69,6 +69,9 @@ for width,height in [(319,495),(390,844),(972,494),(1366,768)]:
    assert get('play')['display']=='flex'
    assert get('play')['flex-direction']=='column'
    assert current[exercise]['display']=='grid'
+   if width<=760:
+    assert current[exercise]['max-height']=='340px'
+    assert current[exercise]['flex']=='0 1 340px'
    assert current[exercise]['grid-template-columns']==('minmax(0,1.3fr) minmax(0,.9fr)' if width>760 else 'minmax(0,1fr)')
    assert current[exercise]['grid-template-rows']==('minmax(100px,1fr)' if width>760 else 'minmax(64px,1fr) auto')
    assert get('staff')['grid-column']=='1' and get('staff')['grid-row']=='1'
